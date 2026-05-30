@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fraud prevention</title>
+<style>
+  :root {
+    --ink: #0a2540;          /* Stripe slate — never pure black */
+    --ink-2: #425466;
+    --ink-3: #697386;
+    --hair: #e6e9ee;
+    --indigo: #635bff;
+    --indigo-2: #7a73ff;
+    --blue: #00d4ff;
+    --sans: "Söhne", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body {
+    background: #ffffff;
+    font-family: var(--sans);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    display: grid;
+    place-items: center;
+    padding: 64px 32px;
+  }
+
+  .feature { width: 440px; }
+
+  /* the diorama: a floating chart panel with a soft spectral glow behind its top */
+  .panel-wrap { position: relative; }
+  .panel-wrap::before {
+    content: "";
+    position: absolute;
+    left: -8%; right: -8%; top: -10%;
+    height: 60%;
+    background:
+      radial-gradient(40% 80% at 22% 0%, rgba(99,91,255,0.30), transparent 70%),
+      radial-gradient(42% 80% at 70% 0%, rgba(0,212,255,0.26), transparent 72%),
+      radial-gradient(38% 80% at 95% 10%, rgba(255,110,180,0.20), transparent 72%);
+    filter: blur(10px);
+    z-index: 0;
+  }
+
+  .panel {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    border: 1px solid var(--hair);
+    border-radius: 14px;
+    padding: 22px 22px 14px;
+    box-shadow:
+      0 1px 2px rgba(10,37,64,0.04),
+      0 12px 28px -12px rgba(10,37,64,0.16);
+  }
+
+  .panel h3 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 16px;
+  }
+
+  .legend {
+    display: flex;
+    gap: 26px;
+    margin-bottom: 18px;
+  }
+  .legend .item { display: flex; flex-direction: column; gap: 6px; }
+  .legend .k {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; color: var(--ink-2); font-weight: 500;
+  }
+  .legend .sw { width: 10px; height: 10px; border-radius: 3px; }
+  .legend .v { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+  .legend .line-ic { width: 12px; height: 2px; background: var(--ink); border-radius: 2px; }
+
+  .chart { width: 100%; height: 132px; display: block; }
+  .axis { display: flex; justify-content: space-between; margin-top: 8px; }
+  .axis span { font-size: 11px; color: var(--ink-3); }
+
+  .copy { padding: 26px 4px 0; }
+  .copy h2 {
+    font-size: 25px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    margin-bottom: 12px;
+  }
+  .copy p {
+    font-size: 15.5px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    max-width: 42ch;
+  }
+  .copy p .em { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+  <article class="feature">
+    <div class="panel-wrap">
+      <div class="panel">
+        <h3>Fraud</h3>
+        <div class="legend">
+          <div class="item">
+            <span class="k"><span class="sw" style="background:#635bff"></span>Fraudulent disputes</span>
+            <span class="v">0.06%</span>
+          </div>
+          <div class="item">
+            <span class="k"><span class="sw" style="background:#00b6e6"></span>Early fraud warnings</span>
+            <span class="v">0.02%</span>
+          </div>
+          <div class="item">
+            <span class="k"><span class="line-ic"></span>Total fraud rate</span>
+            <span class="v">0.08%</span>
+          </div>
+        </div>
+        <svg class="chart" viewBox="0 0 396 132" preserveAspectRatio="none" aria-hidden="true">
+          <!-- bars: a lower indigo stack + a blue cap, rounded tops -->
+          <g>
+            <!-- generated set of 12 bars -->
+            <!-- indigo base bars -->
+            <rect x="6"   y="58"  width="22" height="74" rx="4" fill="#635bff"/>
+            <rect x="38"  y="70"  width="22" height="62" rx="4" fill="#635bff"/>
+            <rect x="70"  y="64"  width="22" height="68" rx="4" fill="#635bff"/>
+            <rect x="102" y="76"  width="22" height="56" rx="4" fill="#635bff"/>
+            <rect x="134" y="86"  width="22" height="46" rx="4" fill="#635bff"/>
+            <rect x="166" y="72"  width="22" height="60" rx="4" fill="#635bff"/>
+            <rect x="198" y="80"  width="22" height="52" rx="4" fill="#635bff"/>
+            <rect x="230" y="66"  width="22" height="66" rx="4" fill="#635bff"/>
+            <rect x="262" y="78"  width="22" height="54" rx="4" fill="#635bff"/>
+            <rect x="294" y="60"  width="22" height="72" rx="4" fill="#635bff"/>
+            <rect x="326" y="74"  width="22" height="58" rx="4" fill="#635bff"/>
+            <rect x="358" y="68"  width="22" height="64" rx="4" fill="#635bff"/>
+            <!-- blue caps -->
+            <rect x="6"   y="44"  width="22" height="18" rx="4" fill="#00b6e6"/>
+            <rect x="38"  y="54"  width="22" height="20" rx="4" fill="#00b6e6"/>
+            <rect x="70"  y="48"  width="22" height="20" rx="4" fill="#00b6e6"/>
+            <rect x="102" y="62"  width="22" height="18" rx="4" fill="#00b6e6"/>
+            <rect x="134" y="72"  width="22" height="18" rx="4" fill="#00b6e6"/>
+            <rect x="166" y="58"  width="22" height="18" rx="4" fill="#00b6e6"/>
+            <rect x="198" y="66"  width="22" height="18" rx="4" fill="#00b6e6"/>
+            <rect x="230" y="52"  width="22" height="18" rx="4" fill="#00b6e6"/>
+            <rect x="262" y="64"  width="22" height="18" rx="4" fill="#00b6e6"/>
+            <rect x="294" y="46"  width="22" height="18" rx="4" fill="#00b6e6"/>
+            <rect x="326" y="60"  width="22" height="18" rx="4" fill="#00b6e6"/>
+            <rect x="358" y="54"  width="22" height="18" rx="4" fill="#00b6e6"/>
+          </g>
+          <!-- total-rate trend line -->
+          <polyline
+            points="17,40 49,50 81,44 113,58 145,68 177,54 209,62 241,48 273,60 305,42 337,56 369,50"
+            fill="none" stroke="#0a2540" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="axis"><span>Jan</span><span>Apr</span><span>Aug</span><span>Dec</span></div>
+      </div>
+    </div>
+
+    <div class="copy">
+      <h2>Fraud prevention</h2>
+      <p>Get real-time fraud prevention that automatically detects and blocks
+      fraudulent transactions. Businesses using Stripe see a
+      <span class="em">38% reduction in fraud</span> on average.</p>
+    </div>
+  </article>
+</body>
+</html>

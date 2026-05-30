@@ -48,13 +48,13 @@
   .panel {
     position: relative;
     z-index: 1;
-    background: #fff;
+    background: linear-gradient(180deg, #fcfcfe 0%, #ffffff 40%);
     border: 1px solid var(--hair);
     border-radius: 14px;
-    padding: 22px 22px 14px;
+    padding: 22px 24px 18px;
     box-shadow:
       0 1px 2px rgba(10,37,64,0.04),
-      0 12px 28px -12px rgba(10,37,64,0.16);
+      0 12px 28px -14px rgba(10,37,64,0.14);
   }
 
   .panel h3 {
@@ -78,7 +78,7 @@
   .legend .v { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
   .legend .line-ic { width: 12px; height: 2px; background: var(--ink); border-radius: 2px; }
 
-  .chart { width: 100%; height: 132px; display: block; }
+  .chart { width: 100%; height: 150px; display: block; }
   .axis { display: flex; justify-content: space-between; margin-top: 8px; }
   .axis span { font-size: 11px; color: var(--ink-3); }
 
@@ -110,7 +110,7 @@
             <span class="v">0.06%</span>
           </div>
           <div class="item">
-            <span class="k"><span class="sw" style="background:#00b6e6"></span>Early fraud warnings</span>
+            <span class="k"><span class="sw" style="background:#4d7bff"></span>Early fraud warnings</span>
             <span class="v">0.02%</span>
           </div>
           <div class="item">
@@ -118,41 +118,47 @@
             <span class="v">0.08%</span>
           </div>
         </div>
-        <svg class="chart" viewBox="0 0 396 132" preserveAspectRatio="none" aria-hidden="true">
-          <!-- bars: a lower indigo stack + a blue cap, rounded tops -->
+        <svg class="chart" viewBox="0 0 396 140" preserveAspectRatio="none" aria-hidden="true">
+          <!-- faint top gridline -->
+          <line x1="0" y1="14" x2="396" y2="14" stroke="#eef1f5" stroke-width="1"/>
+          <line x1="0" y1="124" x2="396" y2="124" stroke="#eef1f5" stroke-width="1"/>
+
+          <!-- 12 columns: a rounded purple base bar + a DETACHED blue cap floating
+               above it with a gap (the signature Stripe segmented look) -->
           <g>
-            <!-- generated set of 12 bars -->
-            <!-- indigo base bars -->
-            <rect x="6"   y="58"  width="22" height="74" rx="4" fill="#635bff"/>
-            <rect x="38"  y="70"  width="22" height="62" rx="4" fill="#635bff"/>
-            <rect x="70"  y="64"  width="22" height="68" rx="4" fill="#635bff"/>
-            <rect x="102" y="76"  width="22" height="56" rx="4" fill="#635bff"/>
-            <rect x="134" y="86"  width="22" height="46" rx="4" fill="#635bff"/>
-            <rect x="166" y="72"  width="22" height="60" rx="4" fill="#635bff"/>
-            <rect x="198" y="80"  width="22" height="52" rx="4" fill="#635bff"/>
-            <rect x="230" y="66"  width="22" height="66" rx="4" fill="#635bff"/>
-            <rect x="262" y="78"  width="22" height="54" rx="4" fill="#635bff"/>
-            <rect x="294" y="60"  width="22" height="72" rx="4" fill="#635bff"/>
-            <rect x="326" y="74"  width="22" height="58" rx="4" fill="#635bff"/>
-            <rect x="358" y="68"  width="22" height="64" rx="4" fill="#635bff"/>
-            <!-- blue caps -->
-            <rect x="6"   y="44"  width="22" height="18" rx="4" fill="#00b6e6"/>
-            <rect x="38"  y="54"  width="22" height="20" rx="4" fill="#00b6e6"/>
-            <rect x="70"  y="48"  width="22" height="20" rx="4" fill="#00b6e6"/>
-            <rect x="102" y="62"  width="22" height="18" rx="4" fill="#00b6e6"/>
-            <rect x="134" y="72"  width="22" height="18" rx="4" fill="#00b6e6"/>
-            <rect x="166" y="58"  width="22" height="18" rx="4" fill="#00b6e6"/>
-            <rect x="198" y="66"  width="22" height="18" rx="4" fill="#00b6e6"/>
-            <rect x="230" y="52"  width="22" height="18" rx="4" fill="#00b6e6"/>
-            <rect x="262" y="64"  width="22" height="18" rx="4" fill="#00b6e6"/>
-            <rect x="294" y="46"  width="22" height="18" rx="4" fill="#00b6e6"/>
-            <rect x="326" y="60"  width="22" height="18" rx="4" fill="#00b6e6"/>
-            <rect x="358" y="54"  width="22" height="18" rx="4" fill="#00b6e6"/>
+            <!-- purple base bars: rounded all corners, lifted off the baseline -->
+            <rect x="8"   y="52"  width="22" height="70" rx="5" fill="#635bff"/>
+            <rect x="40"  y="64"  width="22" height="58" rx="5" fill="#635bff"/>
+            <rect x="72"  y="58"  width="22" height="64" rx="5" fill="#635bff"/>
+            <rect x="104" y="70"  width="22" height="52" rx="5" fill="#635bff"/>
+            <rect x="136" y="80"  width="22" height="42" rx="5" fill="#635bff"/>
+            <rect x="168" y="66"  width="22" height="56" rx="5" fill="#635bff"/>
+            <rect x="200" y="74"  width="22" height="48" rx="5" fill="#635bff"/>
+            <rect x="232" y="60"  width="22" height="62" rx="5" fill="#635bff"/>
+            <rect x="264" y="72"  width="22" height="50" rx="5" fill="#635bff"/>
+            <rect x="296" y="54"  width="22" height="68" rx="5" fill="#635bff"/>
+            <rect x="328" y="68"  width="22" height="54" rx="5" fill="#635bff"/>
+            <rect x="360" y="62"  width="22" height="60" rx="5" fill="#635bff"/>
+            <!-- blue caps: separate rounded rects, ~9px gap above each bar -->
+            <rect x="8"   y="29"  width="22" height="14" rx="5" fill="#4d7bff"/>
+            <rect x="40"  y="43"  width="22" height="14" rx="5" fill="#4d7bff"/>
+            <rect x="72"  y="37"  width="22" height="14" rx="5" fill="#4d7bff"/>
+            <rect x="104" y="49"  width="22" height="14" rx="5" fill="#4d7bff"/>
+            <rect x="136" y="59"  width="22" height="14" rx="5" fill="#4d7bff"/>
+            <rect x="168" y="45"  width="22" height="14" rx="5" fill="#4d7bff"/>
+            <rect x="200" y="53"  width="22" height="14" rx="5" fill="#4d7bff"/>
+            <rect x="232" y="39"  width="22" height="14" rx="5" fill="#4d7bff"/>
+            <rect x="264" y="51"  width="22" height="14" rx="5" fill="#4d7bff"/>
+            <rect x="296" y="33"  width="22" height="14" rx="5" fill="#4d7bff"/>
+            <rect x="328" y="47"  width="22" height="14" rx="5" fill="#4d7bff"/>
+            <rect x="360" y="41"  width="22" height="14" rx="5" fill="#4d7bff"/>
           </g>
-          <!-- total-rate trend line -->
-          <polyline
-            points="17,40 49,50 81,44 113,58 145,68 177,54 209,62 241,48 273,60 305,42 337,56 369,50"
-            fill="none" stroke="#0a2540" stroke-width="2"
+
+          <!-- total-rate trend line: smooth Catmull-ish curve through the points -->
+          <path
+            d="M19,46 C35,44 35,58 51,58 S83,52 99,62 S131,72 147,60
+               S179,66 195,52 S227,64 243,46 S275,60 291,40 S323,54 339,50 379,46"
+            fill="none" stroke="#0a2540" stroke-width="2.5"
             stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <div class="axis"><span>Jan</span><span>Apr</span><span>Aug</span><span>Dec</span></div>

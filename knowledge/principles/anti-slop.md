@@ -5,6 +5,24 @@ safe, familiar, or like something produced a thousand times before, it is
 probably slop — choose the considered thing instead. This is a floor, not a
 style; it applies in every design language.
 
+## Copy & emphasis tells (these read as broken, not designed)
+- **Do not bold or recolor scattered key phrases inside body paragraphs.** The
+  "bold a few near-black words inside muted gray body text" treatment is a
+  vibe-coded tell and looks broken. Body copy is one consistent weight and color.
+  Create emphasis through what you *say* and through real hierarchy (a headline, a
+  stat, a labelled element) — not by bolding words mid-sentence.
+- Do not put the accent color on a single word of the headline ("Just _ask the
+  question_") — that two-tone-headline trick is an overused AI gimmick. Let the
+  whole headline carry one weight/color.
+- No "● Live" pulsing-dot eyebrows unless the thing is genuinely, literally live.
+
+## Layout integrity (a clipped diorama looks broken)
+- The diorama/visual must **fit and fill its frame.** Never let content overflow a
+  fixed-height container and get cut off, and never leave a large dead empty zone
+  inside a panel. If you build N fragments, size the stage to hold them, or build
+  fewer, better fragments. Decide the scene's content and its frame together.
+- Prefer intrinsic/auto height with padding over fixed pixel heights that can clip.
+
 ## Never ship generic AI aesthetics
 - No default font stacks as a *display* crutch: avoid Inter, Roboto, Arial, and
   bare `system-ui` as the headline choice. Choose type with intent. System faces

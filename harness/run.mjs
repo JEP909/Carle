@@ -44,7 +44,14 @@ async function generate(c) {
   const res = await fetch(`${BASE}/api/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ language: c.language, structure: c.structure, prompt: c.brief }),
+    // Knowledge path: send the brief; the agent infers the component and
+    // reasons from the knowledge files. (language/structure/component optional.)
+    body: JSON.stringify({
+      prompt: c.brief,
+      ...(c.component ? { component: c.component } : {}),
+      ...(c.language ? { language: c.language } : {}),
+      ...(c.structure ? { structure: c.structure } : {}),
+    }),
   });
   if (!res.ok && !res.body) {
     const j = await res.json().catch(() => ({}));

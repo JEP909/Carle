@@ -1,29 +1,35 @@
 {
-  "_comment": "The tuning suite. Each case is a generation target. Edit the MD files (languages/*.md, lib/structures.ts, prompts/*.md), then `node harness/run.mjs` to regenerate and rebuild the contact sheet. Pin a gold-standard image in harness/gold/<id>.png to compare generated output against what 'genuinely good' looks like.",
+  "_comment": "Tuning suite. Edit the knowledge MD files, then `node harness/run.mjs` to regenerate and rebuild the contact sheet. The current MVP path is knowledge-driven (no language/structure needed) — these cases just send a brief; the agent infers the component and reasons from the knowledge.",
   "cases": [
     {
-      "id": "aurora-feature-support",
-      "language": "aurora",
-      "structure": "feature",
-      "brief": "A feature card for an AI support tool: it drafts the reply, pulls order history, and routes edge cases to a human. Show a small representative inbox/reply UI fragment as the visual.",
-      "gold": null,
-      "note": "Currently the weak one — cluttered, mockup fights the text. Tune toward a pinned gold example."
+      "id": "feature-support",
+      "brief": "A feature card for an AI customer-support tool. The capability: it drafts the reply, pulls the order history, and routes the hard cases to a human. Show it working.",
+      "note": "Diorama principle — chat/order scene with floating panels."
     },
     {
-      "id": "aurora-pricing-pro",
-      "language": "aurora",
-      "structure": "pricing",
+      "id": "pricing-pro",
       "brief": "A Pro plan pricing card at $24/mo: 5 included seats, unlimited projects, priority support, and a 14-day free trial CTA. Mark it as most popular.",
-      "gold": null,
-      "note": "Currently strong. Keep it strong as we tune."
+      "note": "Big-number price hero, included list, emphasized CTA."
     },
     {
-      "id": "aurora-stat-reply",
-      "language": "aurora",
-      "structure": "stat",
-      "brief": "A stat card showing median first-reply time of 2m 41s across 4,800 live inboxes this week, with a small supporting trend visualization.",
-      "gold": null,
-      "note": "Tests data-viz craft in the language."
+      "id": "stat-reply",
+      "brief": "A stat card proving median first-reply time of 2m 41s across 4,800 live inboxes this week, with a small supporting trend chart and an improvement delta.",
+      "note": "Big-number hero + mini chart/sparkline."
+    },
+    {
+      "id": "hero-analytics",
+      "brief": "A hero section for a product-analytics platform that turns raw events into clear answers. Benefit-led headline, one primary action, and a representative dashboard visual.",
+      "note": "Headline-led, generous space, a product visual."
+    },
+    {
+      "id": "testimonial-founder",
+      "brief": "A testimonial card: a founder of a logistics startup says the product cut their support backlog from days to under an hour. Include name, role, company, and an avatar.",
+      "note": "Quote-led, quiet attribution, believable."
+    },
+    {
+      "id": "cta-trial",
+      "brief": "A final call-to-action section inviting teams to start a free trial of an AI workflow tool. Punchy headline, one dominant button, reassurance line.",
+      "note": "Singular focus, dominant button, distinct field."
     }
   ]
 }

@@ -57,10 +57,41 @@ async function generate(c) {
     const j = await res.json().catch(() => ({}));
     throw new Error(j.error || `HTTP ${res.status}`);
   }
-  const text = await res.text();
-  const html = cleanDoc(text);
+  let html = cleanDoc(await res.text());
+
+  // Auto-gate: run the slop-check. If clean, keep the draft; if it found tells,
+  // the response streams the revised HTML — use that. (Set NO_GATE=1 to skip.)
+  if (!process.env.NO_GATE) {
+    const gated = await gate(c, html);
+    if (gated) html = gated;
+  }
+
   writeFileSync(join(OUT, `${c.id}.html`), html);
   return html;
+}
+
+// Returns revised HTML if the slop-check flagged tells, or null if the card was
+// clean (or the check failed — fail open, keep the draft).
+async function gate(c, html) {
+  try {
+    const res = await fetch(`${BASE}/api/refine`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ html, prompt: c.brief, component: c.component }),
+    });
+    const ctype = res.headers.get("content-type") || "";
+    if (ctype.includes("application/json")) {
+      return null; // {clean:true} — draft passes, no revision
+    }
+    const findings = res.headers.get("x-slop-findings");
+    if (findings) {
+      const ids = JSON.parse(decodeURIComponent(findings)).map((f) => f.id);
+      process.stdout.write(`[gated: ${ids.join(", ")}] `);
+    }
+    return cleanDoc(await res.text());
+  } catch {
+    return null; // fail open
+  }
 }
 
 async function shoot(browser, c) {

@@ -28,7 +28,13 @@ async function streamInto(
   return full;
 }
 
-type Phase = "idle" | "building" | "ready" | "training" | "trained";
+type Phase =
+  | "idle"
+  | "building"
+  | "checking"
+  | "ready"
+  | "training"
+  | "trained";
 
 export default function Carle() {
   const [prompt, setPrompt] = useState("");
@@ -37,7 +43,8 @@ export default function Carle() {
   const [vibe, setVibe] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
-  const busy = phase === "building" || phase === "training";
+  const busy =
+    phase === "building" || phase === "checking" || phase === "training";
   const iframeKey = useRef(0);
 
   const generate = useCallback(async () => {
@@ -56,11 +63,34 @@ export default function Carle() {
         const j = await res.json().catch(() => ({}));
         throw new Error(j.error || `Request failed (${res.status})`);
       }
+      let draft = "";
       await streamInto(res, (full) => {
         const { html, error } = clean(full);
+        draft = html;
         setHtml(html);
         if (error) setError(error);
       });
+      // Auto-gate: run the draft through the slop-check. If it found tells, the
+      // response streams a corrected version — swap it in live. If clean, it
+      // returns JSON and we keep the draft.
+      setPhase("checking");
+      try {
+        const ref = await fetch("/api/refine", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ html: draft, prompt }),
+        });
+        const ctype = ref.headers.get("content-type") || "";
+        if (!ctype.includes("application/json") && ref.body) {
+          setHtml("");
+          await streamInto(ref, (full) => {
+            const { html } = clean(full);
+            setHtml(html);
+          });
+        }
+      } catch {
+        // gate is best-effort; keep the draft on any failure
+      }
       setPhase("ready");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -148,7 +178,13 @@ export default function Carle() {
           />
         </label>
         <button className="btn accent" onClick={generate} disabled={busy || !prompt.trim()}>
-          {phase === "building" ? "Building…" : html ? "Rebuild" : "Build it"}
+          {phase === "building"
+            ? "Building…"
+            : phase === "checking"
+              ? "Polishing…"
+              : html
+                ? "Rebuild"
+                : "Build it"}
         </button>
 
         {html && (
@@ -208,9 +244,10 @@ export default function Carle() {
             </p>
           </div>
         )}
-        {busy && phase === "building" && (
+        {(phase === "building" || phase === "checking") && (
           <div className="status" style={{ position: "absolute", top: 16, left: 16 }}>
-            <span className="dot live" /> streaming
+            <span className="dot live" />{" "}
+            {phase === "checking" ? "quality check" : "streaming"}
           </div>
         )}
       </main>

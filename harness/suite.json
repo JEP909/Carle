@@ -1,0 +1,29 @@
+{
+  "_comment": "The tuning suite. Each case is a generation target. Edit the MD files (languages/*.md, lib/structures.ts, prompts/*.md), then `node harness/run.mjs` to regenerate and rebuild the contact sheet. Pin a gold-standard image in harness/gold/<id>.png to compare generated output against what 'genuinely good' looks like.",
+  "cases": [
+    {
+      "id": "aurora-feature-support",
+      "language": "aurora",
+      "structure": "feature",
+      "brief": "A feature card for an AI support tool: it drafts the reply, pulls order history, and routes edge cases to a human. Show a small representative inbox/reply UI fragment as the visual.",
+      "gold": null,
+      "note": "Currently the weak one — cluttered, mockup fights the text. Tune toward a pinned gold example."
+    },
+    {
+      "id": "aurora-pricing-pro",
+      "language": "aurora",
+      "structure": "pricing",
+      "brief": "A Pro plan pricing card at $24/mo: 5 included seats, unlimited projects, priority support, and a 14-day free trial CTA. Mark it as most popular.",
+      "gold": null,
+      "note": "Currently strong. Keep it strong as we tune."
+    },
+    {
+      "id": "aurora-stat-reply",
+      "language": "aurora",
+      "structure": "stat",
+      "brief": "A stat card showing median first-reply time of 2m 41s across 4,800 live inboxes this week, with a small supporting trend visualization.",
+      "gold": null,
+      "note": "Tests data-viz craft in the language."
+    }
+  ]
+}

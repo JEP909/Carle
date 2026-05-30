@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aurora Pass</title>
+<style>
+  :root {
+    --canvas: #0a0b14;
+    --surface: #12131f;
+    --ink: #f4f5fb;
+    --ink-2: rgba(244, 245, 251, 0.66);
+    --ink-3: rgba(244, 245, 251, 0.42);
+    --hair: rgba(255, 255, 255, 0.08);
+    --indigo: #5b6cff;
+    --violet: #a26bf6;
+    --magenta: #e158c8;
+    --teal: #33c5b0;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { min-height: 100%; }
+  body {
+    background:
+      radial-gradient(60% 50% at 78% 12%, rgba(162, 107, 246, 0.10), transparent 70%),
+      radial-gradient(50% 45% at 14% 88%, rgba(51, 197, 176, 0.08), transparent 72%),
+      var(--canvas);
+    font-family: var(--sans);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    display: grid;
+    place-items: center;
+    padding: 64px 24px;
+  }
+
+  /* ---- the card ------------------------------------------------------- */
+  .card {
+    --mx: 50%;
+    --my: 30%;
+    position: relative;
+    width: 380px;
+    background: var(--surface);
+    border: 1px solid var(--hair);
+    border-radius: 24px;
+    padding: 30px 30px 26px;
+    overflow: hidden;
+    isolation: isolate;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      0 24px 60px -20px rgba(0, 0, 0, 0.7),
+      0 0 80px -30px rgba(91, 108, 255, 0.5);
+    transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1),
+                box-shadow 220ms ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      0 30px 70px -20px rgba(0, 0, 0, 0.75),
+      0 0 110px -28px rgba(162, 107, 246, 0.6);
+  }
+
+  /* cursor-tracked sheen — the house move */
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      340px 340px at var(--mx) var(--my),
+      rgba(162, 107, 246, 0.18),
+      rgba(91, 108, 255, 0.10) 38%,
+      transparent 64%
+    );
+    opacity: 0;
+    transition: opacity 240ms ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .card:hover::before { opacity: 1; }
+
+  .card > * { position: relative; z-index: 1; }
+
+  /* ---- the focal object: a spectral pass ------------------------------ */
+  .pass {
+    position: relative;
+    border-radius: 16px;
+    aspect-ratio: 1.9;
+    padding: 18px 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 12px 30px -14px rgba(91, 108, 255, 0.6);
+  }
+  .pass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(135deg,
+        #3a2a6e 0%,
+        #5b6cff 28%,
+        #a26bf6 48%,
+        #33c5b0 66%,
+        #1d2452 100%);
+  }
+  .pass::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(118deg,
+        transparent 36%,
+        rgba(255, 255, 255, 0.5) 48%,
+        transparent 56%);
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+  .pass > * { position: relative; z-index: 1; }
+
+  .pass-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .pass-name {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.86);
+  }
+  .pass-chip {
+    width: 30px;
+    height: 23px;
+    border-radius: 5px;
+    background: linear-gradient(135deg, #f4e9c9, #cdb277);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+    position: relative;
+  }
+  .pass-chip::before, .pass-chip::after {
+    content: ""; position: absolute; background: rgba(120, 95, 40, 0.5);
+  }
+  .pass-chip::before { left: 0; right: 0; top: 50%; height: 1px; }
+  .pass-chip::after { top: 0; bottom: 0; left: 50%; width: 1px; }
+  .pass-no {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* ---- content -------------------------------------------------------- */
+  .eyebrow {
+    margin-top: 24px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--violet);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--violet);
+    box-shadow: 0 0 10px 1px var(--violet);
+  }
+
+  .title {
+    margin-top: 12px;
+    font-size: 27px;
+    line-height: 1.1;
+    letter-spacing: -0.022em;
+    font-weight: 700;
+  }
+  .desc {
+    margin-top: 12px;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    max-width: 30ch;
+  }
+
+  .divider { height: 1px; background: var(--hair); margin: 22px 0 18px; }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .meta .label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+  .meta .value { font-size: 15px; font-weight: 600; margin-top: 3px; }
+
+  .cta {
+    margin-top: 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .btn {
+    flex: 1;
+    border: 0;
+    border-radius: 11px;
+    padding: 13px 18px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0a0b14;
+    background: linear-gradient(120deg, #7c8bff, #a26bf6 55%, #e158c8);
+    cursor: pointer;
+    box-shadow: 0 8px 22px -8px rgba(162, 107, 246, 0.8);
+    transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+  }
+  .btn:hover { transform: translateY(-1px); filter: brightness(1.06); box-shadow: 0 12px 28px -8px rgba(162, 107, 246, 0.95); }
+  .btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .btn:active { transform: translateY(0); }
+  .link {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-2);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition: color 140ms ease;
+  }
+  .link:hover { color: var(--ink); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card, .btn { transition: none; }
+    .card:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+  <article class="card" id="card">
+    <div class="pass">
+      <div class="pass-top">
+        <span class="pass-name">Aurora Pass</span>
+        <span class="pass-chip"></span>
+      </div>
+      <span class="pass-no">NO. 0042</span>
+    </div>
+
+    <span class="eyebrow"><span class="dot"></span>Founder tier</span>
+    <h2 class="title">Everything, the moment it ships</h2>
+    <p class="desc">Unlimited access, priority support, and a permanent seat at every early release.</p>
+
+    <div class="divider"></div>
+
+    <div class="meta">
+      <div>
+        <div class="label">Members</div>
+        <div class="value">Capped at 500</div>
+      </div>
+      <div style="text-align:right">
+        <div class="label">Renews</div>
+        <div class="value">Never — it's yours</div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <button class="btn">Claim your pass</button>
+      <button class="link">See what's inside →</button>
+    </div>
+  </article>
+
+  <script>
+    // Cursor-tracked sheen: feed pointer position into CSS custom props.
+    (function () {
+      var card = document.getElementById("card");
+      if (!card) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      card.addEventListener("pointermove", function (e) {
+        var r = card.getBoundingClientRect();
+        card.style.setProperty("--mx", ((e.clientX - r.left) / r.width) * 100 + "%");
+        card.style.setProperty("--my", ((e.clientY - r.top) / r.height) * 100 + "%");
+      });
+    })();
+  </script>
+</body>
+</html>

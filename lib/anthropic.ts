@@ -7,6 +7,8 @@ import {
   VIBE_CONTRACT,
 } from "./prompts";
 import type { Archetype } from "./archetypes";
+import type { DesignLanguage } from "./design-language";
+import type { Structure } from "./structures";
 
 export const MODEL = "claude-opus-4-8";
 
@@ -81,6 +83,66 @@ export function systemFor(
   const contract = mode === "generate" ? GENERATE_CONTRACT : TWEAK_CONTRACT;
   if (!arche) return mode === "generate" ? GENERATE_SYSTEM : TWEAK_SYSTEM;
   return buildArchetypeSystem(arche, contract);
+}
+
+// ---------------------------------------------------------------------------
+// Composition: design language × structure × brief.
+//
+// This is the "smarter than templates" core. The design language (the vibe) and
+// the structure (the intent) are INDEPENDENT inputs. We hand the model:
+//   1. universal craft principles,
+//   2. the language spec + any learned taste corrections,
+//   3. a reference component as proof of the language's QUALITY BAR — explicitly
+//      labelled with the structure it happens to be, so the model imitates the
+//      *language*, not that structure,
+//   4. the requested structure's intent (a job to do, never a skeleton),
+//   5. the output contract (carries the cache breakpoint).
+// The model then composes a fresh layout — no skeleton is ever filled in.
+// ---------------------------------------------------------------------------
+function languageReferenceBlock(lang: DesignLanguage): string {
+  return `# Reference: the quality bar for the "${lang.label}" language
+
+Below is a hand-built, production-quality component **in the ${lang.label}
+language**. It happens to be a ${lang.referenceStructure} — that is NOT the
+structure you must build. Study it only for the *design language*: how the canvas,
+light/gradients, ink, type, form, detail density, and motion are executed, and
+the overall level of craft. Reproduce that language and that quality in whatever
+structure you are asked to build. Do not copy its layout or its content.
+
+\`\`\`html
+${lang.reference}
+\`\`\``;
+}
+
+function learnedBlock(lang: DesignLanguage): string {
+  if (!lang.learned.length) return "";
+  return `# Learned taste (corrections that refine this language)
+
+Apply these on top of the language spec — they reflect the user's accumulated
+preferences and take precedence where they conflict:
+
+${lang.learned.map((l) => `- ${l}`).join("\n")}`;
+}
+
+export function composeSystem(
+  lang: DesignLanguage,
+  structure: Structure,
+  mode: "generate" | "tweak",
+): TextBlock[] {
+  const contract = mode === "generate" ? GENERATE_CONTRACT : TWEAK_CONTRACT;
+  const blocks: TextBlock[] = [
+    { type: "text", text: PRINCIPLES },
+    { type: "text", text: lang.spec },
+  ];
+  const learned = learnedBlock(lang);
+  if (learned) blocks.push({ type: "text", text: learned });
+  blocks.push({ type: "text", text: languageReferenceBlock(lang) });
+  blocks.push({
+    type: "text",
+    text: `# The structure to build\n\n${structure.intent}`,
+  });
+  blocks.push({ type: "text", text: contract, cache_control: { type: "ephemeral" } });
+  return blocks;
 }
 
 // Turn an Anthropic text stream into a web ReadableStream of UTF-8 chunks the

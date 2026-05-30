@@ -6,6 +6,7 @@ import {
   TWEAK_CONTRACT,
   VIBE_CONTRACT,
 } from "./prompts";
+import type { Archetype } from "./archetypes";
 
 export const MODEL = "claude-opus-4-8";
 
@@ -39,6 +40,48 @@ function buildSystem(contract: string): TextBlock[] {
 export const GENERATE_SYSTEM = buildSystem(GENERATE_CONTRACT);
 export const TWEAK_SYSTEM = buildSystem(TWEAK_CONTRACT);
 export const VIBE_SYSTEM = buildSystem(VIBE_CONTRACT);
+
+// Archetype system: principles stay, but the archetype's tuned aesthetic spec
+// REPLACES the generic anti-slop (whose palette rules would contradict the
+// house style), and a hand-built reference is supplied as loose inspiration —
+// quality bar and visual language, not a template. The whole static prefix
+// (principles + aesthetic + reference + contract) caches behind the breakpoint
+// on the contract block.
+function referenceBlock(arche: Archetype): string {
+  return `# Reference component (quality bar — loose inspiration, NOT a template)
+
+Below is a hand-built component in the "${arche.label}" house style. Study the
+*level of craft* and the *visual vocabulary* — the foil/mesh treatment, the ink,
+the shadow stack, the micro-detail density. Then build something fresh for the
+brief: your own layout, your own focal object and content. Do not copy its
+structure or reproduce it; match its quality and language.
+
+\`\`\`html
+${arche.reference}
+\`\`\``;
+}
+
+export function buildArchetypeSystem(
+  arche: Archetype,
+  contract: string,
+): TextBlock[] {
+  return [
+    { type: "text", text: PRINCIPLES },
+    { type: "text", text: arche.aesthetic },
+    { type: "text", text: referenceBlock(arche) },
+    { type: "text", text: contract, cache_control: { type: "ephemeral" } },
+  ];
+}
+
+// Resolve the system array for a generate/tweak request, with optional archetype.
+export function systemFor(
+  mode: "generate" | "tweak",
+  arche: Archetype | null,
+): TextBlock[] {
+  const contract = mode === "generate" ? GENERATE_CONTRACT : TWEAK_CONTRACT;
+  if (!arche) return mode === "generate" ? GENERATE_SYSTEM : TWEAK_SYSTEM;
+  return buildArchetypeSystem(arche, contract);
+}
 
 // Turn an Anthropic text stream into a web ReadableStream of UTF-8 chunks the
 // browser can read incrementally — this is what makes generation feel instant.

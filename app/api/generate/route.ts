@@ -1,10 +1,5 @@
-import {
-  MODEL,
-  GENERATE_SYSTEM,
-  TWEAK_SYSTEM,
-  toTextStream,
-  hasApiKey,
-} from "@/lib/anthropic";
+import { MODEL, systemFor, toTextStream, hasApiKey } from "@/lib/anthropic";
+import { getArchetype } from "@/lib/archetypes";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -29,7 +24,8 @@ export async function POST(req: Request) {
     return Response.json({ error: "Describe what to build." }, { status: 400 });
   }
 
-  const system = isTweak ? TWEAK_SYSTEM : GENERATE_SYSTEM;
+  const arche = getArchetype(body.archetype);
+  const system = systemFor(isTweak ? "tweak" : "generate", arche);
   const userContent = isTweak
     ? `Here is the current component:\n\n${current}\n\nApply this change and return the full updated document:\n\n${tweak}`
     : prompt!;

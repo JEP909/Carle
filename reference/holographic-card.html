@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Create a card issuing programme</title>
+<style>
+  :root {
+    --ink: #1a1f36;          /* never pure black */
+    --ink-soft: #4a5071;
+    --ink-faint: #8b90a8;
+    --surface: #ffffff;
+    --hairline: #eef0f4;
+    --radius-card: 24px;
+    --radius-credit: 16px;
+    --sans: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    min-height: 100%;
+    background: #f6f7f9;
+    font-family: var(--sans);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    display: grid;
+    place-items: center;
+    padding: 56px 24px;
+  }
+
+  /* ---- the card shell -------------------------------------------------- */
+  .card {
+    position: relative;
+    width: 420px;
+    background: var(--surface);
+    border-radius: var(--radius-card);
+    padding: 40px 40px 56px;
+    box-shadow:
+      0 1px 1px rgba(26, 31, 54, 0.04),
+      0 8px 24px -8px rgba(26, 31, 54, 0.10),
+      0 32px 64px -24px rgba(26, 31, 54, 0.14);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  /* soft mesh wash bleeding from behind the credit card — mostly white,
+     colour only pooling at the soft edges */
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(38% 30% at 22% 32%, rgba(255, 122, 89, 0.13), transparent 70%),
+      radial-gradient(40% 32% at 82% 24%, rgba(214, 93, 255, 0.13), transparent 72%),
+      radial-gradient(46% 38% at 78% 82%, rgba(120, 116, 255, 0.12), transparent 72%),
+      radial-gradient(40% 34% at 18% 86%, rgba(255, 138, 101, 0.10), transparent 72%);
+    filter: blur(6px);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+
+  .title {
+    font-size: 30px;
+    line-height: 1.12;
+    letter-spacing: -0.022em;
+    font-weight: 600;
+    max-width: 14ch;
+  }
+
+  .expand {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: #f3f1fb;
+    display: grid;
+    place-items: center;
+    color: #7c6df2;
+    transition: background 160ms ease, transform 160ms ease;
+    cursor: pointer;
+  }
+  .expand:hover { background: #ebe7fa; transform: translateY(-1px); }
+  .expand:active { transform: translateY(0); }
+  .expand svg { width: 16px; height: 16px; }
+
+  /* ---- the holographic credit card (portrait) ------------------------- */
+  .credit {
+    position: relative;
+    width: 64%;
+    margin: 0 auto;
+    aspect-ratio: 0.63;           /* portrait */
+    border-radius: var(--radius-credit);
+    padding: 22px 22px;
+    color: #fff;
+    overflow: hidden;
+    background: #f3a;
+    box-shadow:
+      0 2px 6px rgba(26, 31, 54, 0.10),
+      0 22px 48px -18px rgba(124, 109, 242, 0.40);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* base holographic sheet — distinct diagonal colour bands, with the white
+     foil "settle" pooling into the lower-right corner */
+  .credit::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      /* corner white settle, lower-right */
+      radial-gradient(120% 95% at 100% 100%, #ffffff 8%, rgba(255,255,255,0) 46%),
+      /* diagonal foil bands */
+      linear-gradient(152deg,
+        #ff9ec7 0%,
+        #f57ad6 15%,
+        #bf69f3 31%,
+        #8a79f4 44%,
+        #b495f1 54%,
+        #ff9d88 68%,
+        #ffd2bd 80%,
+        #fff3ea 100%);
+  }
+  /* the diagonal light streak + foil sheen that sells the hologram */
+  .credit::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(150deg,
+        transparent 18%,
+        rgba(255,255,255,0.65) 30%,
+        rgba(255,255,255,0.0) 40%),
+      linear-gradient(150deg,
+        transparent 58%,
+        rgba(255,255,255,0.5) 66%,
+        rgba(255,255,255,0.0) 74%);
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+
+  .credit > * { position: relative; z-index: 1; }
+
+  .chip-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .chip {
+    width: 46px;
+    height: 36px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, #f4e9c9, #d8c089);
+    position: relative;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
+  }
+  /* chip contact lines */
+  .chip::before,
+  .chip::after {
+    content: "";
+    position: absolute;
+    background: rgba(140, 110, 50, 0.55);
+  }
+  .chip::before { left: 0; right: 0; top: 50%; height: 1.5px; transform: translateY(-50%); }
+  .chip::after  { top: 0; bottom: 0; left: 50%; width: 1.5px; transform: translateX(-50%); }
+
+  .waves { width: 26px; height: 26px; color: rgba(255,255,255,0.92); }
+
+  .credit .spacer { flex: 1; }
+
+  .brand {
+    align-self: flex-end;
+    font-size: 26px;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(60, 40, 90, 0.30);
+  }
+</style>
+</head>
+<body>
+  <article class="card">
+    <div class="header">
+      <h2 class="title">Create a card issuing programme</h2>
+      <button class="expand" aria-label="Expand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <polyline points="9 21 3 21 3 15"></polyline>
+          <line x1="21" y1="3" x2="14" y2="10"></line>
+          <line x1="3" y1="21" x2="10" y2="14"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="credit">
+      <div class="chip-row">
+        <div class="chip"></div>
+        <svg class="waves" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M8.5 8.5a5 5 0 0 1 0 7"></path>
+          <path d="M11.5 6a8.5 8.5 0 0 1 0 12"></path>
+          <path d="M14.5 3.5a12 12 0 0 1 0 17"></path>
+        </svg>
+      </div>
+      <div class="spacer"></div>
+      <div class="brand">VISA</div>
+    </div>
+  </article>
+</body>
+</html>

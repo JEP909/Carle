@@ -10,6 +10,7 @@ import type { Archetype } from "./archetypes";
 import type { DesignLanguage } from "./design-language";
 import type { Structure } from "./structures";
 import { PRINCIPLES_BUNDLE, componentSkill } from "./knowledge";
+import { anchorsFor, type Anchor } from "./anchors";
 
 export const MODEL = "claude-opus-4-8";
 
@@ -174,9 +175,33 @@ apply. Make exactly that change, keep everything else, and hold the same design
 quality and principles above. Reply with the complete updated HTML document and
 nothing else — first character \`<\`.`;
 
+function anchorBlock(anchors: Anchor[]): string {
+  const examples = anchors
+    .map(
+      (a, i) =>
+        `## Example ${i + 1} — why it's good: ${a.note}\n\n\`\`\`html\n${a.html}\n\`\`\``,
+    )
+    .join("\n\n");
+  return `# Quality bar — study these, do NOT copy them
+
+The following are hand-built components that meet the quality bar this project
+demands. Study them for CRAFT and CONSTRUCTION technique: how the diorama is
+built from real, layered UI fragments; the restraint (slate ink, one accent, no
+gradient-glow clichés); the precise spacing, shadows, and chart drawing; how copy
+is anchored quietly below the scene.
+
+Then build something ORIGINAL for the brief. Do not reuse their layout, content,
+copy, or subject. Match their level of polish and their construction approach —
+never their specifics. If your output resembles one of these examples, you have
+failed; reason from the brief and compose freshly at this quality.
+
+${examples}`;
+}
+
 // Build the system for the knowledge path. Principles bundle is the stable,
-// cacheable prefix; an optional component skill is appended; the contract
-// carries the cache breakpoint.
+// cacheable prefix; an optional component skill is appended; validated anchors
+// are supplied as a few-shot quality bar; the contract carries the cache
+// breakpoint.
 export function buildKnowledgeSystem(
   componentId: string | null,
   mode: "generate" | "tweak",
@@ -184,6 +209,11 @@ export function buildKnowledgeSystem(
   const blocks: TextBlock[] = [{ type: "text", text: PRINCIPLES_BUNDLE }];
   const skill = componentSkill(componentId);
   if (skill) blocks.push({ type: "text", text: skill });
+  // Anchors only help generation; on tweak we keep the current doc the focus.
+  if (mode === "generate") {
+    const anchors = anchorsFor(componentId);
+    if (anchors.length) blocks.push({ type: "text", text: anchorBlock(anchors) });
+  }
   blocks.push({
     type: "text",
     text: mode === "generate" ? KNOWLEDGE_CONTRACT : KNOWLEDGE_TWEAK_CONTRACT,

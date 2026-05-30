@@ -32,7 +32,20 @@ afterthought. Reason about it from these principles — do not reach for a defau
 - **Numbers**: prices and stats are showpieces — set them large, tight, optically
   aligned; use tabular figures for data that aligns in columns.
 
-## Optical care
-- Align to the optical edge, not the bounding box (punctuation, round letters).
-- Trim the leading at the top of headings so they sit tight to elements above.
-- Don't center long-form text. Center only short, balanced phrases.
+## Faces that read as "premium product" (grounded in references)
+The references (Stripe, Chatbase, Stan, Chexy, Vercel, Linear) almost all use a
+**clean geometric/neo-grotesque sans** for both headings and body — tight,
+confident, low-contrast. Headlines are large and heavy with tight tracking; body
+is the same family at regular weight in muted gray. Good choices in that vein:
+a well-drawn grotesque (think Söhne / Geist / General Sans / Inter Tight family
+character) set impeccably. The "look" comes far more from *setting* (size jump,
+weight, tracking, muted body) than from an exotic face — so set a grotesque
+beautifully rather than reaching for novelty. Editorial/luxury briefs may instead
+pair a high-contrast serif display with a clean sans body.
+
+## The reference headline recipe
+- Headline: ~22–40px depending on context, weight 600–700, tracking -0.02em,
+  near-black ink (`#0a0a0a`–`#111827`), short measure (one or two tight lines).
+- Body/support: same family, ~15–16px, weight 400, muted gray (`#6b7280`-ish),
+  line-height ~1.5, capped at ~2 lines on a card.
+- Eyebrow/label: ~11–12px, uppercase, wide tracking (0.1–0.16em), accent tint.

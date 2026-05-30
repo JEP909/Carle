@@ -27,6 +27,18 @@ familiar palette.
 - Use contrast intentionally for hierarchy: the most important element gets the
   most contrast; supporting elements recede.
 
+## Reference palettes (grounded)
+The premium product look is mostly **near-white canvas + near-black ink + one
+accent**, with color appearing as an ambient wash behind dioramas:
+- Canvas: `#ffffff` to `#fafafa`; ink `#0a0a0a`–`#111827`; muted text `#6b7280`;
+  hairlines `rgba(16,24,40,.08)`.
+- Accents seen: Stripe indigo/violet `#635bff` with teal glints; Chexy indigo
+  field `#3b2e7e`→`#5b4bc4` with lavender controls; Stan per-card grainy washes
+  (coral-red, gold, gray); Chatbase warm coral→pink→amber underglow on black.
+- A card may invert to a saturated field (Chexy) or a grainy colored wash (Stan)
+  while keeping floating white sub-panels inside it. Use one accent family per
+  card; let it glow, don't smear it everywhere.
+
 ## Gradients & light (when the brief invites it)
 - A gradient should read as **light**, not paint: layered, soft, with a clear
   direction, often pooling at edges or behind a focal object. Build from related

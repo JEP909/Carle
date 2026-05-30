@@ -11,9 +11,17 @@ const ROOT = process.cwd();
 const KNOW = join(ROOT, "knowledge");
 const read = (...p: string[]) => readFileSync(join(KNOW, ...p), "utf8");
 
-// Always-on principles. Order matters: anti-slop is the floor, read last so it
-// frames everything. These form a stable cacheable prefix.
-const PRINCIPLE_FILES = ["typography", "color", "layout", "motion", "anti-slop"];
+// Always-on principles. Order matters: craft-primitives gives the construction
+// vocabulary, the rest shape decisions, and anti-slop is the floor (read last so
+// it frames everything). These form a stable cacheable prefix.
+const PRINCIPLE_FILES = [
+  "typography",
+  "color",
+  "layout",
+  "craft-primitives",
+  "motion",
+  "anti-slop",
+];
 
 export const PRINCIPLES_BUNDLE: string = PRINCIPLE_FILES.map((f) =>
   read("principles", `${f}.md`),

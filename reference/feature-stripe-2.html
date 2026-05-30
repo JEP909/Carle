@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stripe payment features</title>
+<style>
+  :root {
+    --ink: #0a2540;
+    --ink-2: #425466;
+    --ink-3: #8792a2;
+    --hair: #e3e8ee;
+    --field-hair: #d5dbe6;
+    --tint: #f6f8fb;        /* diorama backdrop */
+    --indigo: #635bff;
+    --check-bg: #efeafe;
+    --sans: "Söhne", "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body {
+    background: #fff;
+    font-family: var(--sans);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 56px 40px;
+  }
+
+  .card { width: 460px; }
+
+  /* diorama region: tinted backdrop, content bleeds off the top + sides */
+  .stage {
+    position: relative;
+    background: linear-gradient(180deg, #eef1f6 0%, #f6f8fb 100%);
+    border-radius: 16px;
+    height: 300px;
+    overflow: hidden;
+    border: 1px solid var(--hair);
+  }
+
+  /* ---------- card 1: checkout form ---------- */
+  .checkout {
+    position: absolute;
+    left: 34px; right: -40px; top: 40px;
+    background: #fff;
+    border-radius: 14px 0 0 0;
+    box-shadow: 0 1px 2px rgba(10,37,64,.05), 0 18px 40px -16px rgba(10,37,64,.22);
+    padding: 26px 28px;
+  }
+  .lbl { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+  .input {
+    height: 44px; border: 1px solid var(--field-hair); border-radius: 8px;
+    display: flex; align-items: center; padding: 0 14px;
+    font-size: 14px; color: var(--ink-2);
+    box-shadow: 0 1px 1px rgba(10,37,64,.04);
+  }
+  .pm-label { margin-top: 20px; }
+  .pm-row { display: flex; gap: 10px; margin-bottom: 22px; }
+  .pm {
+    flex: 1; height: 64px; border: 1px solid var(--field-hair); border-radius: 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+    font-size: 12.5px; color: var(--ink-2);
+    box-shadow: 0 1px 1px rgba(10,37,64,.04);
+  }
+  .pm.sel { border: 1.5px solid var(--indigo); box-shadow: 0 0 0 1px var(--indigo); color: var(--ink); }
+  .pm.dots { flex: 0 0 56px; }
+  .pm svg { display: block; }
+
+  /* ---------- card 2: payment links ---------- */
+  .links-stage { }
+  .succeed {
+    position: absolute;
+    left: 34px; top: 34px; width: 250px;
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(10,37,64,.05), 0 18px 40px -16px rgba(10,37,64,.22);
+    padding: 22px 22px 0;
+    overflow: hidden;
+  }
+  .succeed .badge {
+    width: 38px; height: 38px; border-radius: 10px; margin: 4px auto 12px;
+    background: linear-gradient(135deg, #3ecfb2, #4d7bff);
+    display: grid; place-items: center; position: relative;
+  }
+  .succeed .badge .tick {
+    position: absolute; right: -4px; top: -4px; width: 18px; height: 18px;
+    background: var(--indigo); border-radius: 50%; display: grid; place-items: center;
+    border: 2px solid #fff;
+  }
+  .succeed .ttl { text-align: center; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .succeed .sub { text-align: center; font-size: 11.5px; line-height: 1.45; color: var(--ink-3); margin-bottom: 16px; }
+  .receipt {
+    border-top: 1px dashed var(--field-hair);
+    margin: 0 -22px; padding: 14px 22px 22px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--ink-3); letter-spacing: .04em;
+    position: relative;
+  }
+  /* zig-zag torn bottom edge */
+  .receipt::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 8px;
+    background: linear-gradient(135deg, #fff 33%, transparent 33%) 0 0 / 12px 12px,
+                linear-gradient(-135deg, #fff 33%, transparent 33%) 0 0 / 12px 12px;
+    filter: drop-shadow(0 1px 0 #eef1f6);
+  }
+  .product {
+    position: absolute;
+    right: 30px; top: 60px; width: 218px;
+    background: #fff; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(10,37,64,.05), 0 18px 40px -16px rgba(10,37,64,.22);
+  }
+  .product .img {
+    height: 150px;
+    background:
+      radial-gradient(120% 90% at 70% 20%, #d8d2e6, #c9c3d8 60%, #b9b3c9);
+    position: relative;
+  }
+  .product .img::before, .product .img::after {
+    content: ""; position: absolute; bottom: 0; width: 38px; height: 116px;
+    border-radius: 7px 7px 0 0;
+    background: linear-gradient(180deg, #f3eef0 0%, #e7dfe6 70%, #d9cdd6 100%);
+    box-shadow: 0 8px 16px rgba(80,60,90,.25);
+  }
+  .product .img::before { left: 74px; transform: rotate(-9deg); }
+  .product .img::after  { left: 104px; transform: rotate(7deg); height: 124px; }
+  .cap-tip { position: absolute; border-radius: 4px 4px 0 0; background: #fff; }
+  .product .meta { padding: 14px 16px 16px; }
+  .product .name { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .product .url { font-size: 11.5px; color: var(--ink-3); margin-top: 3px; }
+
+  /* ---------- shared copy block ---------- */
+  .copy { padding: 30px 6px 0; }
+  .copy h2 { font-size: 27px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.12; }
+  .copy .desc { font-size: 16px; line-height: 1.5; color: var(--ink-2); margin-top: 14px; max-width: 30ch; }
+  .list { margin-top: 22px; display: flex; flex-direction: column; gap: 16px; }
+  .li { display: flex; gap: 12px; align-items: flex-start; font-size: 15px; line-height: 1.45; color: var(--ink-2); }
+  .li .ck {
+    flex: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--check-bg); display: grid; place-items: center; margin-top: 1px;
+  }
+</style>
+</head>
+<body>
+  <!-- CARD 1 -->
+  <article class="card">
+    <div class="stage">
+      <div class="checkout">
+        <div class="lbl">Email</div>
+        <div class="input">timotheero@stripe.com</div>
+        <div class="lbl pm-label">Payment method</div>
+        <div class="pm-row">
+          <div class="pm sel">
+            <svg width="22" height="16" viewBox="0 0 22 16" fill="none"><rect x="1" y="1" width="20" height="14" rx="2.5" stroke="#0a2540" stroke-width="1.4"/><rect x="1" y="4.5" width="20" height="3" fill="#0a2540"/></svg>
+            Card
+          </div>
+          <div class="pm">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#1f4391"><path d="M7 3h7.5c3 0 5 2 4.4 5.2-.6 3-3 4.3-6 4.3H9.5L8.4 18H5.3L7 3z"/><path d="M5 6h7c2.6 0 4.3 1.7 3.8 4.6-.5 2.7-2.6 3.9-5.3 3.9H7.7L6.7 20H3.6L5 6z" fill="#3b7bbf" opacity=".85"/></svg>
+            PayPal
+          </div>
+          <div class="pm">
+            <span style="background:#ffb3c7;color:#0a0a0a;font-weight:700;width:22px;height:22px;border-radius:5px;display:grid;place-items:center;font-size:12px;">K.</span>
+            Klarna
+          </div>
+          <div class="pm dots">
+            <svg width="20" height="6" viewBox="0 0 20 6" fill="#8792a2"><circle cx="3" cy="3" r="2"/><circle cx="10" cy="3" r="2"/><circle cx="17" cy="3" r="2"/></svg>
+          </div>
+        </div>
+        <div class="lbl">Card information</div>
+        <div class="input" style="border-bottom-left-radius:0;border-bottom-right-radius:0;"></div>
+      </div>
+    </div>
+    <div class="copy">
+      <h2>Pre-built payment page</h2>
+      <p class="desc">Launch faster with a conversion-optimised, full-page checkout</p>
+      <div class="list">
+        <div class="li"><span class="ck">✓</span>Embed on your site or redirect to a Stripe-hosted page</div>
+        <div class="li"><span class="ck">✓</span>Customise the colours and fonts to match your brand</div>
+        <div class="li"><span class="ck">✓</span>Add support for recurring payments and Stripe Tax with no additional integration work</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- CARD 2 -->
+  <article class="card">
+    <div class="stage">
+      <div class="succeed">
+        <div class="badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="2" fill="#fff" opacity=".9"/><path d="M3 9l9 5 9-5" stroke="#3ecfb2" stroke-width="1.6"/></svg>
+          <span class="tick"><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </div>
+        <div class="ttl">Payment succeeded</div>
+        <div class="sub">Thanks for your purchase! A payment from POWDUR will appear on your statement.</div>
+        <div class="receipt"><span>POWDUR</span><span style="letter-spacing:0;color:var(--ink-2);font-weight:600;">CA$65.00</span></div>
+      </div>
+      <div class="product">
+        <div class="img"></div>
+        <div class="meta">
+          <div class="name">Powdur Pure Set</div>
+          <div class="url">https://buy.stripe.com/aF8fUK</div>
+        </div>
+      </div>
+    </div>
+    <div class="copy">
+      <h2>Shareable payment links</h2>
+      <p class="desc">The fastest way to accept payments – no code required</p>
+      <div class="list">
+        <div class="li"><span class="ck">✓</span>Share links over email, SMS, or any other channel</div>
+        <div class="li"><span class="ck">✓</span>Accept one-time, recurring, or pay-what-you-want payments</div>
+        <div class="li"><span class="ck">✓</span>Turn your link into a QR code or an embeddable buy button</div>
+      </div>
+    </div>
+  </article>
+
+  <script>
+    // tint the check marks indigo (kept as text ✓ but recolored)
+    document.querySelectorAll('.ck').forEach(function(c){ c.style.color = '#635bff'; c.style.fontSize='12px'; c.style.fontWeight='700'; });
+  </script>
+</body>
+</html>

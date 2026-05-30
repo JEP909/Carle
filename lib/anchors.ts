@@ -34,6 +34,12 @@ export const ANCHORS: Anchor[] = [
     note: "Two feature cards: a checkout-form diorama and a payment-succeeded receipt + product card. Believable mini-UI fragments with depth on a tinted stage; navy heading + lavender-check list below.",
     html: read("feature-stripe-2.html"),
   },
+  {
+    id: "stripe-link",
+    components: ["feature", "stat"],
+    note: "Exemplary INTERIOR FRAGMENT craft: a real product panel (brand glyph tile, status pill, a primary + two outlined buttons) with a metric panel-within-panel — a metric anchored line chart with area-fill and a white-ringed endpoint dot. Panel-in-panel depth, layered shadows, big number kept light (weight ~450, not bold). This is the bar for interior fragments.",
+    html: read("feature-stripe-link.html"),
+  },
 ];
 
 export function anchorsFor(componentId: string | null, limit = 2): Anchor[] {

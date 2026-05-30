@@ -1,0 +1,78 @@
+// Hand-build the dense "Advanced Analytics" interior graphic anchor — platform
+// performance cards with colored stat pills, avatars, a List/Table toggle, and a
+// "New trend / Generate similar" input, at the density of the Stan reference.
+const fs = require("fs");
+
+const pill = (txt, cls) => `<span class="stat ${cls}">${txt}</span>`;
+
+const platform = (name, glyph, gcolor, pills) => `
+      <div class="pcard">
+        <div class="ph"><span class="pi" style="background:${gcolor}">${glyph}</span><span class="pn">${name}</span></div>
+        <div class="pills">${pills}</div>
+      </div>`;
+
+const yt = `<svg viewBox="0 0 24 24" width="13" height="13" fill="#fff"><path d="M10 8.64v6.72L16 12z"/><path d="M21.6 7.2a2.5 2.5 0 0 0-1.76-1.77C18.25 5 12 5 12 5s-6.25 0-7.84.43A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.76 1.77C5.75 19 12 19 12 19s6.25 0 7.84-.43A2.5 2.5 0 0 0 21.6 16.8 26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8z" fill="none"/></svg>`;
+const tt = `<svg viewBox="0 0 24 24" width="13" height="13" fill="#fff"><path d="M16 4c.5 2.2 2 3.7 4 4v3c-1.7 0-3.2-.5-4.5-1.4V15a5.5 5.5 0 1 1-5.5-5.5c.3 0 .6 0 .9.1v3.1a2.5 2.5 0 1 0 1.6 2.3V4H16z"/></svg>`;
+
+const html = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Advanced Analytics</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#fff;display:grid;place-items:center;padding:56px 32px;-webkit-font-smoothing:antialiased}
+.card{width:460px}
+.stage{position:relative;border-radius:22px;padding:22px;overflow:hidden;background:linear-gradient(160deg,#f4f5f8,#eceef3)}
+.panel{position:relative;z-index:1;background:#fff;border-radius:16px;padding:18px;
+  box-shadow:0 1px 2px rgba(20,24,40,.05),0 18px 38px -18px rgba(20,24,40,.3),inset 0 1px 0 rgba(255,255,255,.8)}
+.ptop{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.toggle{display:flex;background:#f1f2f5;border-radius:9px;padding:3px}
+.toggle span{font-size:13px;font-weight:500;color:#8a8f9c;padding:5px 12px;border-radius:7px}
+.toggle span.on{background:#fff;color:#15181f;box-shadow:0 1px 2px rgba(20,24,40,.12)}
+.avs{display:flex;align-items:center;gap:8px}
+.avstack{display:flex}
+.avstack .a{width:26px;height:26px;border-radius:50%;border:2px solid #fff;margin-left:-8px;background:linear-gradient(135deg,#7c8bff,#a26bf6)}
+.avstack .a:first-child{margin-left:0;background:linear-gradient(135deg,#34c5b0,#3a8effb)}
+.avstack .a:nth-child(2){background:linear-gradient(135deg,#ff9e6a,#e85d8a)}
+.invite{font-size:13px;font-weight:500;color:#5b6072;display:flex;align-items:center;gap:5px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.pcard{border:1px solid #eceef2;border-radius:12px;padding:14px;box-shadow:0 1px 1px rgba(20,24,40,.03)}
+.ph{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.pi{width:24px;height:24px;border-radius:7px;display:grid;place-items:center}
+.pn{font-size:14.5px;font-weight:600;color:#15181f}
+.pills{display:flex;flex-wrap:wrap;gap:7px}
+.stat{font-size:12px;font-weight:500;padding:4px 9px;border-radius:7px}
+.s-green{background:#e6f7ee;color:#1f9d57}.s-blue{background:#e6f0fe;color:#2563d6}.s-amber{background:#fdf0e1;color:#c4781a}.s-grey{background:#f1f2f5;color:#5b6072}
+.trend{display:flex;align-items:center;gap:10px;border:1px solid #eceef2;border-radius:11px;padding:8px 8px 8px 14px}
+.trend input{flex:1;border:0;outline:0;font-family:inherit;font-size:14px;color:#15181f;background:transparent}
+.trend input::placeholder{color:#a3a8b4}
+.gen{background:#e8472f;color:#fff;border:0;font-family:inherit;font-size:13px;font-weight:600;padding:9px 14px;border-radius:8px;cursor:pointer;box-shadow:0 4px 12px -4px rgba(232,71,47,.6)}
+.copy{padding:24px 4px 0}
+.copy h2{font-size:25px;font-weight:600;letter-spacing:-.02em;line-height:1.15;color:#0a0a0a}
+.copy p{font-size:15.5px;line-height:1.5;color:#5b6472;margin-top:12px;max-width:38ch}
+</style></head><body>
+<article class="card">
+  <div class="stage">
+    <div class="panel">
+      <div class="ptop">
+        <div class="toggle"><span class="on">List</span><span>Table</span></div>
+        <div class="avs"><div class="avstack"><span class="a"></span><span class="a"></span><span class="a"></span></div><span class="invite">+ Invite</span></div>
+      </div>
+      <div class="cards">
+        ${platform("YouTube Shorts", yt, "#ff0033", pill("112 videos","s-grey")+pill("302.1k views","s-blue")+pill("Top: Green-screen","s-amber"))}
+        ${platform("TikTok", tt, "#000", pill("+130 comments","s-green")+pill("100.2k views","s-blue")+pill("Slideshows winning","s-grey"))}
+      </div>
+      <div class="trend">
+        <input value="" placeholder="Describe a new trend to remix…" />
+        <button class="gen">Generate similar</button>
+      </div>
+    </div>
+  </div>
+  <div class="copy">
+    <h2>See what's working, then make more of it</h2>
+    <p>Track every platform in one view and spin up the next post from your best-performing trends.</p>
+  </div>
+</article>
+</body></html>`;
+
+fs.writeFileSync("reference/feature-analytics.html", html);
+console.log("wrote reference/feature-analytics.html");

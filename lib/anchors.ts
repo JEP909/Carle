@@ -43,12 +43,24 @@ export const ANCHORS: Anchor[] = [
   {
     id: "omnichannel",
     components: ["feature"],
-    note: "Depth + REAL ASSETS done right: a floating white integration grid (real brand logos via {{logo:...}}) on a saturated purple watercolor field, with a dark floating 'channels connected' pill. Shows committed saturated color, real layered shadows, authentic logos in rounded tiles — not flat CSS shapes. Note how logos use the {{logo:NAME}} token, never hand-drawn paths.",
+    note: "Depth + REAL ASSETS done right: a floating white integration grid (real brand logos via {{logo:...}}) on a saturated purple watercolor field. Committed saturated color, real layered shadows, authentic logos in rounded tiles — not flat CSS shapes. Logos use the {{logo:NAME}} token, never hand-drawn paths.",
     html: read("feature-omnichannel.html"),
+  },
+  {
+    id: "scheduler",
+    components: ["feature"],
+    note: "DENSE INTERIOR GRAPHIC: a believable weekly-scheduler product screen — a 'Repeat Weekly / Every week' header, a row of day chips with one selected (green), labelled meta rows (Start, Created at) with a small person tag, and Cancel + solid-dark Save buttons — floating on a soft grainy stage. The bar for interior density: a real, specific UI fragment with real micro-content, not a sparse gesture.",
+    html: read("feature-scheduler.html"),
+  },
+  {
+    id: "analytics",
+    components: ["feature", "stat"],
+    note: "DENSE INTERIOR GRAPHIC, professional restraint: a real analytics panel — a List/Table segmented toggle, an avatar stack + Invite, two platform cards using REAL logos ({{logo:youtube}}, {{logo:tiktok}}) with tight stat ROWS (label left, tabular value right, accent color only on up-metrics — NOT candy-colored pills), and a 'Generate similar' input with ONE confident accent button. Shows how to keep dense dashboard UI restrained and Stripe-grade rather than rainbow.",
+    html: read("feature-analytics.html"),
   },
 ];
 
-export function anchorsFor(componentId: string | null, limit = 2): Anchor[] {
+export function anchorsFor(componentId: string | null, limit = 3): Anchor[] {
   const pool = componentId
     ? ANCHORS.filter((a) => a.components.includes(componentId))
     : ANCHORS;

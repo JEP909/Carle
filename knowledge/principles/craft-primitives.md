@@ -69,6 +69,36 @@ For stats and metric-led cards (Chexy "7,000", Stripe "$1,025").
   smaller and muted beside it. Tabular figures. May take an accent or gradient
   text-fill on dark.
 
+## Dense interior fragments (the real-product-screen bar)
+The strongest feature-card interiors are believable, *specific* product screens
+packed with real micro-content — a scheduler, an analytics panel, a run log — not
+sparse gestures. Build them from these real pieces:
+- **Segmented toggle**: a pill group (e.g. List / Table) with the active segment
+  on a white raised chip; inactive segments muted.
+- **Selection chips**: a row of equal chips (e.g. day-of-week S M T W T F) with
+  one selected in a soft tinted state.
+- **Stat ROWS, not candy pills**: prefer a tight row — label on the left (muted),
+  value right-aligned and bold with tabular figures — over a scatter of
+  multi-colored pills. Use an accent color on at most the up/positive metric.
+  Rainbow stat pills read as amateur; aligned slate rows read as engineered.
+- **Avatar stack + Invite**: overlapping round avatars with a "+ Invite" affordance.
+- **Input-with-button**: a bordered input with a single solid accent button inset
+  on the right (e.g. "Generate similar").
+- **Person/label tag**: a small rounded tag with a tiny avatar dot + name.
+- **Labelled meta rows**: "Start", "Created at" — muted key left, value right.
+
+Density + restraint together: pack the panel with real UI, but keep the palette
+disciplined (slate ink, one accent). One confident accent button beats several
+colored chips.
+
+## Real logos, always
+When a fragment shows a brand/platform (YouTube, TikTok, Slack, Notion, a card
+network…), use the real logo via the **`{{logo:NAME}}`** token in a clean white
+tile — never a hand-drawn approximation. Hand-drawn brand glyphs are an instant
+quality drop. Available: youtube, tiktok, instagram, x, slack, whatsapp,
+messenger, gmail, discord, telegram, notion, github, google, stripe, visa,
+mastercard, amex.
+
 ## Composition note
 A great card usually combines a few of these (e.g. floating panels + a wash + a
 status pill + a mini chart) into ONE scene with a clear focal element, then

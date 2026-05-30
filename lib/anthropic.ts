@@ -9,6 +9,7 @@ import {
 import type { Archetype } from "./archetypes";
 import type { DesignLanguage } from "./design-language";
 import type { Structure } from "./structures";
+import { PRINCIPLES_BUNDLE, componentSkill } from "./knowledge";
 
 export const MODEL = "claude-opus-4-8";
 
@@ -142,6 +143,52 @@ export function composeSystem(
     text: `# The structure to build\n\n${structure.intent}`,
   });
   blocks.push({ type: "text", text: contract, cache_control: { type: "ephemeral" } });
+  return blocks;
+}
+
+// ---------------------------------------------------------------------------
+// The MVP path: knowledge-driven generation. ONE path, no presets, no corpus.
+//
+// The agent always reasons from the cross-cutting design principles (typography,
+// color, layout, motion, anti-slop). If the brief is about a known component
+// type, the relevant component skill is loaded too. Then it composes original
+// work for the brief — "prompt it to make a graph and it makes a beautiful
+// graph" — because it's reasoning from taste, not filling a template.
+// ---------------------------------------------------------------------------
+const KNOWLEDGE_CONTRACT = `# Your task
+
+Build the single component the user describes — whatever it is. Reason from the
+design knowledge above: choose type, color, layout, and motion with intent for
+THIS brief and its domain. Be genuinely creative and specific — compose an
+original piece, never a fill-in-the-blank template. Sweat the details: real
+states, real on-brief copy, precise spacing, one clear focal point, a tasteful
+moment of motion.
+
+Output one complete, self-contained HTML document and nothing else — no fences,
+no commentary. The first character of your reply must be \`<\`.`;
+
+const KNOWLEDGE_TWEAK_CONTRACT = `# Your task
+
+You will be given the current component (a full HTML document) and a change to
+apply. Make exactly that change, keep everything else, and hold the same design
+quality and principles above. Reply with the complete updated HTML document and
+nothing else — first character \`<\`.`;
+
+// Build the system for the knowledge path. Principles bundle is the stable,
+// cacheable prefix; an optional component skill is appended; the contract
+// carries the cache breakpoint.
+export function buildKnowledgeSystem(
+  componentId: string | null,
+  mode: "generate" | "tweak",
+): TextBlock[] {
+  const blocks: TextBlock[] = [{ type: "text", text: PRINCIPLES_BUNDLE }];
+  const skill = componentSkill(componentId);
+  if (skill) blocks.push({ type: "text", text: skill });
+  blocks.push({
+    type: "text",
+    text: mode === "generate" ? KNOWLEDGE_CONTRACT : KNOWLEDGE_TWEAK_CONTRACT,
+    cache_control: { type: "ephemeral" },
+  });
   return blocks;
 }
 

@@ -1,21 +1,18 @@
 import {
   MODEL,
-  systemFor,
-  composeSystem,
+  buildKnowledgeSystem,
   toTextStream,
   hasApiKey,
 } from "@/lib/anthropic";
-import { getArchetype } from "@/lib/archetypes";
-import { getLanguage } from "@/lib/design-language";
-import { getStructure } from "@/lib/structures";
+import { resolveComponent } from "@/lib/knowledge";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
-// Generation paths, in priority order:
-//   language + structure  -> composeSystem (the "smarter than templates" core)
-//   archetype             -> systemFor(arche)   (legacy single-archetype path)
-//   neither               -> systemFor(null)    (free-form generic path)
+// One path: knowledge-driven generation. Describe any component; the agent
+// reasons from the design-knowledge skills (always-on principles + the relevant
+// component skill, inferred from the brief or passed explicitly) and composes an
+// original piece. No presets, no corpus.
 export async function POST(req: Request) {
   if (!hasApiKey()) {
     return Response.json(
@@ -35,15 +32,8 @@ export async function POST(req: Request) {
   }
 
   const mode = isTweak ? "tweak" : "generate";
-  const lang = getLanguage(body.language);
-  const structure = getStructure(body.structure);
-
-  let system;
-  if (lang && structure) {
-    system = composeSystem(lang, structure, mode);
-  } else {
-    system = systemFor(mode, getArchetype(body.archetype));
-  }
+  const componentId = resolveComponent(body.component, prompt ?? tweak);
+  const system = buildKnowledgeSystem(componentId, mode);
 
   const userContent = isTweak
     ? `Here is the current component:\n\n${current}\n\nApply this change and return the full updated document:\n\n${tweak}`

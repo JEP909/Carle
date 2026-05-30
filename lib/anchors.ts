@@ -40,6 +40,12 @@ export const ANCHORS: Anchor[] = [
     note: "Exemplary INTERIOR FRAGMENT craft: a real product panel (brand glyph tile, status pill, a primary + two outlined buttons) with a metric panel-within-panel — a metric anchored line chart with area-fill and a white-ringed endpoint dot. Panel-in-panel depth, layered shadows, big number kept light (weight ~450, not bold). This is the bar for interior fragments.",
     html: read("feature-stripe-link.html"),
   },
+  {
+    id: "omnichannel",
+    components: ["feature"],
+    note: "Depth + REAL ASSETS done right: a floating white integration grid (real brand logos via {{logo:...}}) on a saturated purple watercolor field, with a dark floating 'channels connected' pill. Shows committed saturated color, real layered shadows, authentic logos in rounded tiles — not flat CSS shapes. Note how logos use the {{logo:NAME}} token, never hand-drawn paths.",
+    html: read("feature-omnichannel.html"),
+  },
 ];
 
 export function anchorsFor(componentId: string | null, limit = 2): Anchor[] {

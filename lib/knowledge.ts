@@ -19,6 +19,7 @@ const PRINCIPLE_FILES = [
   "color",
   "layout",
   "craft-primitives",
+  "assets",
   "motion",
   "anti-slop",
 ];

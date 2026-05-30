@@ -227,6 +227,7 @@ export function buildKnowledgeSystem(
 // grotesque, without the model emitting ~90KB of base64. Loaded once.
 import { readFileSync as _readFileSync } from "node:fs";
 import { join as _join } from "node:path";
+import { logoSvg } from "./logos";
 const FONT_BLOCK: string = (() => {
   try {
     return _readFileSync(_join(process.cwd(), "assets", "font-geist.html"), "utf8");
@@ -234,6 +235,17 @@ const FONT_BLOCK: string = (() => {
     return "";
   }
 })();
+
+// The model emits real brand logos as {{logo:NAME}} (optionally {{logo:NAME:SIZE}}
+// or {{logo:NAME:SIZE:#hex|currentColor}}) instead of guessing SVG path data.
+// We swap each token for the authentic inline SVG server-side.
+const LOGO_TOKEN = /\{\{logo:([a-z0-9]+)(?::(\d+))?(?::(#[0-9a-fA-F]{3,8}|currentColor))?\}\}/g;
+function replaceLogoTokens(s: string): string {
+  return s.replace(LOGO_TOKEN, (full, name, size, color) => {
+    const svg = logoSvg(name, size ? Number(size) : 28, color || undefined);
+    return svg ?? full; // unknown logo: leave the token (visible, so we notice)
+  });
+}
 
 // Turn an Anthropic text stream into a web ReadableStream of UTF-8 chunks the
 // browser can read incrementally — this is what makes generation feel instant.
@@ -245,9 +257,24 @@ export function toTextStream(
   const encoder = new TextEncoder();
   return new ReadableStream({
     async start(controller) {
-      let buffer = "";
+      let headBuffer = "";   // holds text until <head> is found (for font inject)
+      let tail = "";         // holds a small tail that might contain a partial {{logo:}} token
       let started = false;        // have we seen the first "<" yet?
       let fontInjected = FONT_BLOCK === "";  // treat empty font as "done"
+
+      // Emit text with logo tokens replaced. Keep back any trailing partial token
+      // ("{{lo…") so a token split across chunks is resolved, not emitted raw.
+      const emit = (text: string) => {
+        let s = tail + text;
+        const cut = s.lastIndexOf("{{");
+        let hold = "";
+        if (cut !== -1 && !s.slice(cut).includes("}}")) {
+          hold = s.slice(cut);
+          s = s.slice(0, cut);
+        }
+        tail = hold;
+        if (s) controller.enqueue(encoder.encode(replaceLogoTokens(s)));
+      };
 
       const flush = (text: string) => {
         if (!started) {
@@ -257,24 +284,22 @@ export function toTextStream(
           started = true;
         }
         if (!fontInjected) {
-          // Hold text in a small buffer until we can place the font after <head>.
-          buffer += text;
-          const m = buffer.match(/<head[^>]*>/i);
+          headBuffer += text;
+          const m = headBuffer.match(/<head[^>]*>/i);
           if (m) {
             const at = m.index! + m[0].length;
-            const out = buffer.slice(0, at) + "\n" + FONT_BLOCK + buffer.slice(at);
-            controller.enqueue(encoder.encode(out));
-            buffer = "";
+            const out = headBuffer.slice(0, at) + "\n" + FONT_BLOCK + headBuffer.slice(at);
             fontInjected = true;
-          } else if (buffer.length > 4096) {
-            // No <head> seen in a reasonable prefix — give up and pass through.
-            controller.enqueue(encoder.encode(buffer));
-            buffer = "";
+            emit(out);
+            headBuffer = "";
+          } else if (headBuffer.length > 4096) {
             fontInjected = true;
+            emit(headBuffer);
+            headBuffer = "";
           }
           return;
         }
-        controller.enqueue(encoder.encode(text));
+        emit(text);
       };
 
       try {
@@ -287,12 +312,14 @@ export function toTextStream(
             flush(event.delta.text);
           }
         }
-        if (buffer) controller.enqueue(encoder.encode(buffer)); // flush remainder
+        if (headBuffer) emit(headBuffer);
+        if (tail) controller.enqueue(encoder.encode(replaceLogoTokens(tail))); // flush remainder
         await stream.finalMessage();
         controller.close();
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        if (buffer) controller.enqueue(encoder.encode(buffer));
+        if (headBuffer) emit(headBuffer);
+        if (tail) controller.enqueue(encoder.encode(tail));
         // Surface the error into the stream so the client can show it inline.
         controller.enqueue(encoder.encode(`\n\n<!-- carle-error: ${message} -->`));
         controller.close();

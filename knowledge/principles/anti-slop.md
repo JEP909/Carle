@@ -5,6 +5,28 @@ safe, familiar, or like something produced a thousand times before, it is
 probably slop — choose the considered thing instead. This is a floor, not a
 style; it applies in every design language.
 
+## The vibe-coder visual dialect (banned outright)
+These specific moves instantly mark a card as AI-generated. They are forbidden:
+- **The bolt/lightning glyph in a rounded accent-colored square.** This is THE
+  generic "AI / action / generate" icon. Never use a lightning bolt, sparkle ✨,
+  or magic-wand as a primary icon, and never put a lone glyph in a purple/indigo
+  rounded-square tile as a "hub". If you need a focal mark, use a real brand logo
+  ({{logo:...}}) or a specific, meaningful custom icon — never a generic one.
+- **Decorative status pills.** Floating pills like "5 apps connected · syncing",
+  "● Live", "Channels connected", "AI-powered" that exist only as decoration are
+  noise pretending to be product detail. Only show a status indicator if it
+  reflects real, specific state the component is genuinely about.
+- **The generic eyebrow-stack header.** A tiny tracked-uppercase label
+  ("INTEGRATIONS", "FEATURES") sitting above a heading is the default AI-SaaS
+  section pattern. Use an eyebrow only when it adds real information (a category
+  the user needs), set it with restraint, and never as a reflex.
+- **Hub-and-spoke orbit diagrams** with a generic center and satellites are
+  overused. Prefer a real, specific scene (an actual UI fragment) over an
+  abstract diagram unless the brief is literally about connections.
+
+If a composition could belong to any AI startup, it's slop. Make it specific to
+this product.
+
 ## Copy & emphasis tells (these read as broken, not designed)
 - **Do not bold or recolor scattered key phrases inside body paragraphs.** The
   "bold a few near-black words inside muted gray body text" treatment is a

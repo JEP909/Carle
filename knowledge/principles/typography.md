@@ -43,6 +43,18 @@ weight, tracking, muted body) than from an exotic face — so set a grotesque
 beautifully rather than reaching for novelty. Editorial/luxury briefs may instead
 pair a high-contrast serif display with a clean sans body.
 
+## House typeface (use it)
+A clean grotesque named **"Geist"** is embedded in every document automatically
+(you do not need to declare @font-face). Use it as the primary family in your CSS:
+`font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;`
+Set it on the root/body so the whole card inherits it. Geist is a Söhne-class
+neo-grotesque — lean on weight, size, and tracking for hierarchy, not novelty.
+
+**Big numbers are NOT heavy.** A large metric (a price, a stat like `450,335`)
+should be weight 400–500 and open — never 600/700 bold. Heavy large numbers are a
+tell. Reserve 600 for headings and labels; keep showpiece figures lighter and let
+their size carry them.
+
 ## The reference headline recipe
 - Headline: ~22–40px depending on context, weight 600–700, tracking -0.02em,
   near-black ink (`#0a0a0a`–`#111827`), short measure (one or two tight lines).

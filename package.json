@@ -16,9 +16,11 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@fontsource/inter": "^5.2.8",
     "@types/node": "^22.10.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "geist": "^1.7.1",
     "playwright": "^1.60.0",
     "typescript": "^5.7.0"
   }

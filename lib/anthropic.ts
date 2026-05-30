@@ -222,14 +222,61 @@ export function buildKnowledgeSystem(
   return blocks;
 }
 
+// The embedded house font (Geist, base64 woff2) — injected server-side into the
+// <head> of every generated card so output is self-contained with a real
+// grotesque, without the model emitting ~90KB of base64. Loaded once.
+import { readFileSync as _readFileSync } from "node:fs";
+import { join as _join } from "node:path";
+const FONT_BLOCK: string = (() => {
+  try {
+    return _readFileSync(_join(process.cwd(), "assets", "font-geist.html"), "utf8");
+  } catch {
+    return "";
+  }
+})();
+
 // Turn an Anthropic text stream into a web ReadableStream of UTF-8 chunks the
 // browser can read incrementally — this is what makes generation feel instant.
+// As it streams, it (1) drops any stray characters before the first tag and
+// (2) injects the embedded font once, right after the opening <head>.
 export function toTextStream(
   params: Anthropic.MessageStreamParams,
 ): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
   return new ReadableStream({
     async start(controller) {
+      let buffer = "";
+      let started = false;        // have we seen the first "<" yet?
+      let fontInjected = FONT_BLOCK === "";  // treat empty font as "done"
+
+      const flush = (text: string) => {
+        if (!started) {
+          const i = text.indexOf("<");
+          if (i === -1) return;
+          text = text.slice(i);
+          started = true;
+        }
+        if (!fontInjected) {
+          // Hold text in a small buffer until we can place the font after <head>.
+          buffer += text;
+          const m = buffer.match(/<head[^>]*>/i);
+          if (m) {
+            const at = m.index! + m[0].length;
+            const out = buffer.slice(0, at) + "\n" + FONT_BLOCK + buffer.slice(at);
+            controller.enqueue(encoder.encode(out));
+            buffer = "";
+            fontInjected = true;
+          } else if (buffer.length > 4096) {
+            // No <head> seen in a reasonable prefix — give up and pass through.
+            controller.enqueue(encoder.encode(buffer));
+            buffer = "";
+            fontInjected = true;
+          }
+          return;
+        }
+        controller.enqueue(encoder.encode(text));
+      };
+
       try {
         const stream = anthropic.messages.stream(params);
         for await (const event of stream) {
@@ -237,13 +284,15 @@ export function toTextStream(
             event.type === "content_block_delta" &&
             event.delta.type === "text_delta"
           ) {
-            controller.enqueue(encoder.encode(event.delta.text));
+            flush(event.delta.text);
           }
         }
+        if (buffer) controller.enqueue(encoder.encode(buffer)); // flush remainder
         await stream.finalMessage();
         controller.close();
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
+        if (buffer) controller.enqueue(encoder.encode(buffer));
         // Surface the error into the stream so the client can show it inline.
         controller.enqueue(encoder.encode(`\n\n<!-- carle-error: ${message} -->`));
         controller.close();

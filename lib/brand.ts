@@ -1,6 +1,7 @@
 import { anthropic } from "./anthropic";
 import { type Palette, paletteText } from "./palette";
 import { templateIdFromBrief } from "./templates";
+import { type ArtDirectionId, artDirectionBlock, canvasModeFor } from "./art-directions";
 
 // ---------------------------------------------------------------------------
 // BrandProfile — the persisted design identity that makes a user's agent
@@ -27,7 +28,8 @@ export type BrandProfile = {
   business: string; // raw user intake
   expanded: string; // rich internal spec
   name: string; // inferred product/brand name
-  canvasMode: CanvasMode;
+  artDirection: ArtDirectionId; // the committed theme (Stripe/Chatbase/Chexy/Linear)
+  canvasMode: CanvasMode; // derived from artDirection (for the template gate)
   palette: Palette;
   typography: string;
   voice: string[];
@@ -54,35 +56,37 @@ No glow washes as the primary look. If you reach for "dark + purple + glow", sto
 Decide:
 1. name: infer a plausible product/brand name.
 2. expanded: 2-4 tight sentences describing the product concretely.
-3. canvasMode: choose like a real brand would for this DOMAIN:
-   - "light-monochrome" — white/near-white canvas, slate/zinc ink, hairline borders,
-     basically no background gradient; color comes from ONE accent + real content.
-     This is the DEFAULT and correct choice for the large majority of products
-     (SaaS, fintech, commerce, support, health, marketing). Stripe / Chatbase / Chexy
-     are all fundamentally this.
-   - "dark-glass" — ONLY for genuinely developer/infrastructure/security products
-     where dark is native (think Linear, Vercel). And even then it is RESTRAINED:
-     near-black canvas, ONE accent used sparingly, subtle 1px borders, NO purple
-     wash, NO glow gradients. If unsure, do NOT pick this.
-   - "saturated-field" — for a bold consumer/fintech brand: a LIGHT page where ONE
-     section/panel commits to a single saturated brand color (like Chexy's indigo
-     panel). NOT a fully dark or gradient page.
-   When in doubt, choose light-monochrome.
-4. palette: {field, accents, ink, mood}. For light-monochrome, FIELD is white/near-white
-   (e.g. "#ffffff" or "#fafafa"), ink is slate/zinc, and there is exactly ONE accent.
-   Pick a real, brand-appropriate accent for the domain — and AVOID defaulting to
-   purple/violet unless the brand is genuinely purple. Good accents: a confident blue,
-   indigo, teal/emerald, warm coral, amber, or near-black. Tasteful and specific,
-   never rainbow, never neon-on-dark.
+3. artDirection: pick EXACTLY ONE proven theme that fits the DOMAIN. Each carries a
+   committed look + a signature visual move + real depth (so the site has a theme,
+   not generic flat cards):
+   - "stripe" — technical/infra/fintech/payments/data/analytics/B2B platforms.
+     Light, restrained, ONE accent, data-viz + bento grids, floating layered
+     product UI. The DEFAULT for most B2B SaaS.
+   - "chatbase" — AI agents / support / automation / chat tools. Light monochrome
+     zinc + ONE signature gradient used only as a button underglow, orbiting logos,
+     3D rendered objects, very rounded.
+   - "chexy" — bold consumer fintech / rewards / commerce. A light page with ONE
+     saturated brand panel + a photoreal rendered product object.
+   - "linear" — ONLY genuinely developer-tools / infrastructure / security products
+     that are dark-native. Restrained dark, ONE accent, NO glow/purple.
+   When in doubt choose "stripe". Do NOT choose "linear" unless the product is truly
+   developer/infra/security.
+4. palette: {field, accents, ink, mood}. Pick a real, brand-appropriate ACCENT for
+   the domain — AVOID defaulting to purple/violet unless the brand is genuinely
+   purple. Good accents: a confident blue, indigo, teal/emerald, warm coral, amber,
+   or near-black. Tasteful and specific, never rainbow, never neon-on-dark. (The
+   canvas itself is set by the art direction.)
 5. accent: a single canonical accent HEX used sparingly for buttons/links/key numbers.
 6. typography: 1-2 lines (weights, scale, feel). House font is Geist.
 7. voice: 3-5 brand voice traits.
 8. sections: 3-5 sections to showcase the brand. Each {label, brief}, brief = a
    concrete, brand-aware description a designer would build from. Favor variety
-   (hero, feature cards, metrics/stats, pricing, integrations/logos). Be specific.
+   (hero, feature cards, metrics/stats, pricing, integrations/logos). Be specific,
+   and lean into the art direction's signature (e.g. a data-viz section for stripe,
+   an orbiting-integrations section for chatbase, a rendered-product section for chexy).
 
 Respond ONLY as JSON:
-{"name","expanded","canvasMode","palette":{"field","accents","ink","mood"},"accent","typography","voice":[],"sections":[{"label","brief"}]}`;
+{"name","expanded","artDirection","palette":{"field","accents","ink","mood"},"accent","typography","voice":[],"sections":[{"label","brief"}]}`;
 
 const FALLBACK_SECTIONS: Array<{ label: string; brief: string }> = [
   { label: "Hero", brief: "a hero feature section introducing the product with a bold headline, a one-line value proposition, a primary call-to-action, and a believable product UI scene." },
@@ -94,8 +98,8 @@ function rid(prefix: string): string {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
-function asCanvasMode(v: unknown): CanvasMode {
-  return v === "dark-glass" || v === "saturated-field" ? v : "light-monochrome";
+function asArtDirection(v: unknown): ArtDirectionId {
+  return v === "stripe" || v === "chatbase" || v === "chexy" || v === "linear" ? v : "stripe";
 }
 
 // Build the section plans, resolving each to a deterministic template when the
@@ -120,7 +124,7 @@ export async function generateBrandProfile(business: string, tweak?: string): Pr
   try {
     const res = await anthropic.messages.create({
       model: BRAND_MODEL,
-      max_tokens: 1200,
+      max_tokens: 2000,
       system: BRAND_SYSTEM,
       messages: [{ role: "user", content: userContent }],
     });
@@ -139,7 +143,8 @@ export async function generateBrandProfile(business: string, tweak?: string): Pr
     ink: String(p.ink ?? "near-black #0a0a0a on white, muted #6b7280"),
     mood: String(p.mood ?? "clean and premium"),
   };
-  const canvasMode = asCanvasMode(parsed.canvasMode);
+  const artDirection = asArtDirection(parsed.artDirection);
+  const canvasMode = canvasModeFor(artDirection);
   const voice = Array.isArray(parsed.voice)
     ? parsed.voice.filter((v): v is string => typeof v === "string").slice(0, 5)
     : ["confident", "concrete", "premium"];
@@ -152,38 +157,33 @@ export async function generateBrandProfile(business: string, tweak?: string): Pr
     business,
     expanded: String(parsed.expanded ?? business),
     name: String(parsed.name ?? "Your brand"),
+    artDirection,
     canvasMode,
     palette,
     typography: String(parsed.typography ?? "Geist throughout; bold tight headlines, muted body, tabular numbers."),
     voice,
-    accent: typeof parsed.accent === "string" && /^#[0-9a-fA-F]{3,8}$/.test(parsed.accent) ? parsed.accent : "#635bff",
+    accent: typeof parsed.accent === "string" && /^#[0-9a-fA-F]{3,8}$/.test(parsed.accent) ? parsed.accent : "#0f6fec",
     sections: planSections(rawSections, canvasMode),
     createdAt: new Date().toISOString(),
   };
 }
 
-const MODE_RULES: Record<CanvasMode, string> = {
-  "light-monochrome": "white/near-white canvas (#ffffff–#fafafa), zinc/slate ink (#09090b headings, #52525b body, #a1a1aa meta), hairline borders (#e4e4e7), almost NO background gradient. Color enters through ONE accent and real product UI. This is the Stripe/Chatbase/Chexy look — clean and restrained.",
-  "dark-glass": "RESTRAINED dark (Linear/Vercel), not a glowy AI template. Near-black canvas (#0a0b0d–#101114), subtle 1px borders (rgba(255,255,255,.08)), ink #f4f4f5 / #a1a1aa, ONE accent used sparingly on a button or key number. ABSOLUTELY NO purple/violet wash, NO glow gradients, NO color mesh — the surface stays calm and dark, color is a single deliberate touch.",
-  "saturated-field": "a LIGHT page where ONE section/panel commits to a single saturated brand color (like Chexy's indigo panel) with floating WHITE sub-panels on it; the rest of the page stays white/clean. NOT a fully dark or gradient page.",
-};
-
 // The brand block injected into the build system on EVERY generation so all
-// sections share one design language. Identical across parallel samples (caches).
+// sections share one design language + theme + depth. Identical across a project's
+// parallel sample builds, so it caches. The art-direction block carries the
+// signature technique and the depth rules; the rest pins identity/voice/accent.
 export function brandSystemBlock(b: BrandProfile): string {
   return `# Brand identity — this section is part of ONE product's site (OBEY IT)
 
 Product: ${b.name}. ${b.expanded}
 
-Every section you build belongs to this single brand. Do NOT invent a new color
-world per section — commit to the SAME canvas mode and palette throughout.
+Every section belongs to this single brand: same theme, same accent, same depth.
 
-- CANVAS MODE: ${b.canvasMode} — ${MODE_RULES[b.canvasMode]}
-- ACCENT: ${b.accent} (use for primary buttons, links, and key numbers)
+${artDirectionBlock(b.artDirection, b.accent)}
+
+- ACCENT: ${b.accent} (the single confident accent — buttons, links, key numbers)
 - TYPOGRAPHY: ${b.typography}
-- VOICE: ${b.voice.join(", ")} — write copy in this register, with real specifics.
-
-${paletteText(b.palette)}`;
+- VOICE: ${b.voice.join(", ")} — write copy in this register, with real specifics.`;
 }
 
 // A compact brand prefix for the templated (content-spec) path, where the layout

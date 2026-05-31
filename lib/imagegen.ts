@@ -188,7 +188,7 @@ export async function compositeImages(html: string): Promise<string> {
   const withPlaceholders = tokensToPlaceholders(html);
 
   const matches = [...withPlaceholders.matchAll(placeholderRe())];
-  if (!matches.length || !hasImageKey()) return withPlaceholders;
+  if (!matches.length || !hasImageKey()) return stripResidualTokens(withPlaceholders);
 
   // De-dupe identical (prompt|hint) pairs so a fanned deck doesn't pay 3×.
   const jobs = new Map<string, { prompt: string; opts: GenOpts }>();
@@ -212,11 +212,18 @@ export async function compositeImages(html: string): Promise<string> {
     }),
   );
 
-  return withPlaceholders.replace(placeholderRe(), (full, enc, hint) => {
+  const out = withPlaceholders.replace(placeholderRe(), (full, enc, hint) => {
     const url = results.get(`${hint}|${enc}`);
     if (!url) return full;
     return `<img src="${url}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;border-radius:inherit;" />`;
   });
+  return stripResidualTokens(out);
+}
+
+// After all real tokens are resolved, drop any leftover {{...}} — models sometimes
+// invent tokens (e.g. {{check}}) that would otherwise show as raw text.
+function stripResidualTokens(html: string): string {
+  return html.replace(/\{\{[a-zA-Z][^{}]*\}\}/g, "");
 }
 
 // True if the HTML still contains image tokens or unresolved placeholders.

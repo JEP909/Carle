@@ -13,7 +13,10 @@ import { PRINCIPLES_BUNDLE, componentSkill } from "./knowledge";
 import { anchorsFor, type Anchor } from "./anchors";
 import { recipesText } from "./recipes";
 
-export const MODEL = "claude-opus-4-8";
+// The build model. Opus is the quality bar; Sonnet is ~2x faster and far cheaper.
+// Now that the knowledge/recipe harness does the heavy lifting, Sonnet is worth
+// running as the default — override via CARLE_BUILD_MODEL to compare.
+export const MODEL = process.env.CARLE_BUILD_MODEL || "claude-opus-4-8";
 
 // Single shared client. The API key is injected at runtime via ANTHROPIC_API_KEY;
 // the SDK resolves it from the environment.

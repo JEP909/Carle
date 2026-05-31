@@ -37,6 +37,23 @@ replaced server-side with a real photoreal render (transparent background) that
 drops straight onto your card — exactly like a {{logo:}} token, but for a
 rendered 3D object.
 
+**The decision rule — this is important.** If the hero is a SOLID, DIMENSIONAL,
+PHYSICAL OBJECT, it MUST be an {{image:}} render. CSS versions of these read as
+flat clipart and are the #1 quality failure. This includes, but is not limited
+to:
+- a **3D shield / lock / badge / crest** (security, trust, compliance) — a flat
+  CSS shield with a lock glyph is exactly the failure to avoid;
+- a **glowing orb / AI core / sphere / energy object** (AI agents, models) —
+  render it as a real volumetric glass/plasma sphere, not a radial-gradient circle;
+- a **credit/payment card, pass, ticket, key** with real material;
+- a **device / gadget / wearable / product** (puck, phone, speaker, sensor);
+- a **gem / crystal / coin / token / trophy / medal**;
+- a **3D mascot / character / abstract sculptural form**.
+
+Only build the hero in CSS when it is genuinely a FLAT UI THING — a chart, a
+dashboard panel, a chat transcript, an integration logo grid, a settings list. A
+solid object that would cast a real shadow → render it.
+
 - Describe the object precisely and concretely: material, finish, color, angle,
   lighting. e.g. `{{image:a premium credit card at a 30-degree 3D angle, brushed
   metal indigo finish with a gold EMV chip, subtle holographic sheen, soft studio
@@ -54,7 +71,7 @@ rendered 3D object.
 - Aspect: default is square; prepend `wide|` or `tall|` for landscape/portrait
   heroes, e.g. `{{image:wide|a sleek laptop ...}}`.
 
-When the object is SIMPLE enough to build cleanly in CSS/SVG (a flat card mock, a
-chip, an abstract gradient form), prefer hand-building it — it's instant and
-crisp. Reserve {{image:...}} for genuinely dimensional/photoreal objects that
-would look fake as CSS. Never leave a big dead empty zone either way.
+And the inverse failure: a render alone, floating in a big empty zone, is NOT
+enough. Surround it with real hand-built UI (panels, stats, pills, copy) so the
+card is a dense, believable scene — the render is the focal object, not the whole
+card. Never leave a big dead empty zone.

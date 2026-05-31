@@ -129,12 +129,17 @@ realistic shadow, high detail, premium quality.`;
 
 // {{image:PROMPT}} — free text until the closing }}. Optional leading size hint
 // {{image:wide|PROMPT}} or {{image:tall|PROMPT}} for landscape/portrait heroes.
-const IMAGE_TOKEN = /\{\{image:([\s\S]*?)\}\}/g;
-// The placeholder an image token becomes during streaming — a real <img> that
-// carries the (encoded) prompt so it survives the round-trip to the browser and
-// back to the compositor. data-carle-w is "wide"/"tall"/"" for the size hint.
-const PLACEHOLDER =
-  /<img\b[^>]*\bdata-carle-img="([^"]*)"[^>]*\bdata-carle-w="([^"]*)"[^>]*>/g;
+//
+// These are SOURCE strings, not shared RegExp objects: a global regex carries a
+// mutable lastIndex, so reusing one instance across .test()/.matchAll()/.replace()
+// leaks state between calls (a .test() leaves lastIndex non-zero and a later
+// .matchAll() then starts mid-string and misses matches). We build a fresh regex
+// at every use instead.
+const IMAGE_TOKEN_SRC = "\\{\\{image:([\\s\\S]*?)\\}\\}";
+const PLACEHOLDER_SRC =
+  '<img\\b[^>]*\\bdata-carle-img="([^"]*)"[^>]*\\bdata-carle-w="([^"]*)"[^>]*>';
+const imageTokenRe = () => new RegExp(IMAGE_TOKEN_SRC, "g");
+const placeholderRe = () => new RegExp(PLACEHOLDER_SRC, "g");
 
 function optsFor(hint: string): GenOpts {
   if (hint === "wide") return { size: "1536x1024" };
@@ -156,7 +161,7 @@ function parseRaw(raw: string): { prompt: string; opts: GenOpts } {
 // exact call rather than billing again. Safe no-op without a key.
 export function prefetchImages(chunk: string): void {
   if (!hasImageKey()) return;
-  for (const m of chunk.matchAll(IMAGE_TOKEN)) {
+  for (const m of chunk.matchAll(imageTokenRe())) {
     const { prompt, opts } = parseRaw(m[1]);
     generateImage(prompt, opts).catch(() => {});
   }
@@ -166,7 +171,7 @@ export function prefetchImages(chunk: string): void {
 // box during streaming, with the prompt + size hint stashed as data attributes.
 // The browser sees a clean loading panel where the rendered object will land.
 export function tokensToPlaceholders(s: string): string {
-  return s.replace(IMAGE_TOKEN, (_full, raw: string) => {
+  return s.replace(imageTokenRe(), (_full, raw: string) => {
     const m = raw.match(/^(wide|tall)\|([\s\S]+)$/);
     const hint = m ? m[1] : "";
     const prompt = (m ? m[2] : raw).trim();
@@ -182,7 +187,7 @@ export async function compositeImages(html: string): Promise<string> {
   // Accept raw tokens too (test scripts / non-streamed HTML).
   const withPlaceholders = tokensToPlaceholders(html);
 
-  const matches = [...withPlaceholders.matchAll(PLACEHOLDER)];
+  const matches = [...withPlaceholders.matchAll(placeholderRe())];
   if (!matches.length || !hasImageKey()) return withPlaceholders;
 
   // De-dupe identical (prompt|hint) pairs so a fanned deck doesn't pay 3×.
@@ -207,7 +212,7 @@ export async function compositeImages(html: string): Promise<string> {
     }),
   );
 
-  return withPlaceholders.replace(PLACEHOLDER, (full, enc, hint) => {
+  return withPlaceholders.replace(placeholderRe(), (full, enc, hint) => {
     const url = results.get(`${hint}|${enc}`);
     if (!url) return full;
     return `<img src="${url}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;border-radius:inherit;" />`;
@@ -216,7 +221,5 @@ export async function compositeImages(html: string): Promise<string> {
 
 // True if the HTML still contains image tokens or unresolved placeholders.
 export function hasImageTokens(html: string): boolean {
-  IMAGE_TOKEN.lastIndex = 0;
-  PLACEHOLDER.lastIndex = 0;
-  return IMAGE_TOKEN.test(html) || PLACEHOLDER.test(html);
+  return imageTokenRe().test(html) || placeholderRe().test(html);
 }

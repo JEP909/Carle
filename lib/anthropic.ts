@@ -207,10 +207,16 @@ export function buildKnowledgeSystem(
   componentId: string | null,
   mode: "generate" | "tweak",
   recipes: string[] = [],
+  paletteBlock?: string,
 ): TextBlock[] {
   const blocks: TextBlock[] = [{ type: "text", text: PRINCIPLES_BUNDLE }];
   const skill = componentSkill(componentId);
   if (skill) blocks.push({ type: "text", text: skill });
+  // The committed per-card color identity (gives the card character vs a plain
+  // white box). Generate-only.
+  if (mode === "generate" && paletteBlock) {
+    blocks.push({ type: "text", text: paletteBlock });
+  }
   // The planner-selected recipes: precise construction guides for the rich
   // patterns this brief calls for (transcribed from the references).
   if (mode === "generate" && recipes.length) {

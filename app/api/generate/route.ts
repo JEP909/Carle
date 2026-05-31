@@ -7,6 +7,7 @@ import {
 import { resolveComponent } from "@/lib/knowledge";
 import { expandBrief } from "@/lib/expand";
 import { plan } from "@/lib/planner";
+import { pickPalette, paletteText } from "@/lib/palette";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -41,16 +42,18 @@ export async function POST(req: Request) {
   const spec =
     !isTweak && body.expand !== false ? await expandBrief(prompt!) : prompt;
 
-  // Planner: pick the component + the recipe(s) that fit this brief, so only the
-  // relevant construction guides load into the build context.
+  // Planner: pick the component + recipe(s); plus a committed color palette so
+  // the card has real character (not a plain white box). Run in parallel.
   let componentId = resolveComponent(body.component, spec ?? tweak);
   let recipes: string[] = [];
+  let paletteBlock: string | undefined;
   if (!isTweak && spec) {
-    const p = await plan(spec);
+    const [p, pal] = await Promise.all([plan(spec), pickPalette(spec)]);
     if (p.component) componentId = p.component;
     recipes = p.recipes;
+    if (pal) paletteBlock = paletteText(pal);
   }
-  const system = buildKnowledgeSystem(componentId, mode, recipes);
+  const system = buildKnowledgeSystem(componentId, mode, recipes, paletteBlock);
 
   const userContent = isTweak
     ? `Here is the current component:\n\n${current}\n\nApply this change and return the full updated document:\n\n${tweak}`

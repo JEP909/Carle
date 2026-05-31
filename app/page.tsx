@@ -100,12 +100,13 @@ export default function Carle() {
         setHtml(html);
         if (error) setError(error);
       });
-      // Auto-gate: run the draft through the slop-check. If it found tells, the
-      // response streams a corrected version — swap it in live. If clean, it
-      // returns JSON and we keep the draft.
+      // Visual gate: render the draft, let the vision judge score it against the
+      // rubric. If it's below the bar, the response streams a revision that fixes
+      // the specific VISUAL failures it saw. If it already passes, JSON comes
+      // back and we keep the draft.
       setPhase("checking");
       try {
-        const ref = await fetch("/api/refine", {
+        const ref = await fetch("/api/judge", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ html: draft, prompt }),

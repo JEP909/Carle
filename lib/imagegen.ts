@@ -31,13 +31,25 @@ type GenOpts = {
   background?: "transparent" | "opaque" | "auto";
 };
 
+// WebP (with alpha) at ~75% quality is visually indistinguishable from the PNG
+// here but ~5-8× smaller, which is what kept the card HTML at ~2.5MB. Bumping
+// the version tag invalidates the old PNG-keyed cache entries.
+const FORMAT = "webp";
+const COMPRESSION = 75;
+const CACHE_VERSION = "v2-webp";
+
 function cacheKey(prompt: string, opts: GenOpts): string {
   const h = createHash("sha256");
-  h.update(JSON.stringify({ prompt, ...opts }));
+  h.update(JSON.stringify({ v: CACHE_VERSION, prompt, ...opts }));
   return h.digest("hex").slice(0, 32);
 }
 
-// Generate one rendered asset. Returns a base64 PNG data URL, cached on disk.
+// Dedup concurrent generations of the SAME asset within this process. Eager
+// generation (fired mid-stream) and the later judge-time composite then share a
+// single API call instead of racing to bill twice.
+const inflight = new Map<string, Promise<string>>();
+
+// Generate one rendered asset. Returns a base64 WebP data URL, cached on disk.
 export async function generateImage(
   prompt: string,
   opts: GenOpts = {},
@@ -51,55 +63,68 @@ export async function generateImage(
   const key = cacheKey(prompt, o);
   const cachePath = join(CACHE_DIR, `${key}.b64`);
   if (existsSync(cachePath)) {
-    return `data:image/png;base64,${readFileSync(cachePath, "utf8")}`;
+    return `data:image/${FORMAT};base64,${readFileSync(cachePath, "utf8")}`;
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
+  const pending = inflight.get(key);
+  if (pending) return pending;
 
-  // We always ask for an isolated object on a transparent field so it drops
-  // cleanly onto the card's own color, not a white box. The wrapper text steers
-  // every prompt toward the reference look.
-  const fullPrompt = `${prompt}
+  const job = (async () => {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
+
+    // We always ask for an isolated object on a transparent field so it drops
+    // cleanly onto the card's own color, not a white box. The wrapper text
+    // steers every prompt toward the reference look.
+    const fullPrompt = `${prompt}
 
 Single isolated object, no background, no scene, no text, no labels, no UI,
 centered with generous margin. Photoreal product render, crisp edges, soft
 realistic shadow, high detail, premium quality.`;
 
-  const res = await fetch(ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-image-1",
-      prompt: fullPrompt,
-      n: 1,
-      size: o.size,
-      quality: o.quality,
-      background: o.background,
-      output_format: "png",
-    }),
-  });
+    const res = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-image-1",
+        prompt: fullPrompt,
+        n: 1,
+        size: o.size,
+        quality: o.quality,
+        background: o.background,
+        output_format: FORMAT,
+        output_compression: COMPRESSION,
+      }),
+    });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`gpt-image-1 ${res.status}: ${text.slice(0, 300)}`);
-  }
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`gpt-image-1 ${res.status}: ${text.slice(0, 300)}`);
+    }
 
-  const json = (await res.json()) as { data?: { b64_json?: string }[] };
-  const b64 = json.data?.[0]?.b64_json;
-  if (!b64) throw new Error("gpt-image-1 returned no image data");
+    const json = (await res.json()) as { data?: { b64_json?: string }[] };
+    const b64 = json.data?.[0]?.b64_json;
+    if (!b64) throw new Error("gpt-image-1 returned no image data");
 
+    try {
+      mkdirSync(CACHE_DIR, { recursive: true });
+      writeFileSync(cachePath, b64, "utf8");
+    } catch {
+      // cache write is best-effort
+    }
+
+    return `data:image/${FORMAT};base64,${b64}`;
+  })();
+
+  inflight.set(key, job);
   try {
-    mkdirSync(CACHE_DIR, { recursive: true });
-    writeFileSync(cachePath, b64, "utf8");
-  } catch {
-    // cache write is best-effort
+    return await job;
+  } finally {
+    inflight.delete(key);
   }
-
-  return `data:image/png;base64,${b64}`;
 }
 
 // {{image:PROMPT}} — free text until the closing }}. Optional leading size hint
@@ -115,6 +140,26 @@ function optsFor(hint: string): GenOpts {
   if (hint === "wide") return { size: "1536x1024" };
   if (hint === "tall") return { size: "1024x1536" };
   return {};
+}
+
+// Parse a raw token body ("wide|a sleek laptop ...") into prompt + opts.
+function parseRaw(raw: string): { prompt: string; opts: GenOpts } {
+  const m = raw.match(/^(wide|tall)\|([\s\S]+)$/);
+  const hint = m ? m[1] : "";
+  const prompt = (m ? m[2] : raw).trim();
+  return { prompt, opts: optsFor(hint) };
+}
+
+// Eager generation: fire (don't await) a render for every complete {{image:...}}
+// token in a streamed chunk, so the ~14s gen overlaps the rest of the draft and
+// the judge pass. The in-flight map dedups, so the later composite reuses this
+// exact call rather than billing again. Safe no-op without a key.
+export function prefetchImages(chunk: string): void {
+  if (!hasImageKey()) return;
+  for (const m of chunk.matchAll(IMAGE_TOKEN)) {
+    const { prompt, opts } = parseRaw(m[1]);
+    generateImage(prompt, opts).catch(() => {});
+  }
 }
 
 // Turn {{image:...}} tokens into placeholder <img> elements: a subtle shimmer

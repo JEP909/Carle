@@ -29,9 +29,11 @@ everything else around it in CSS.
   tasteful wordmark in a corner panel — so the scene is dense, not just a floating
   render on emptiness.
 
-(If the brief really wants a *fanned deck* of 2–3 cards and CSS perspective reads
-well enough, that's still acceptable — but for a single premium hero card, the
-{{image:}} render is the quality jump.)
+**A single metallic / titanium / matte-black / holographic hero card MUST be an
+{{image:}} render — CSS cannot produce real brushed metal, true reflections, or
+photoreal material, and a flat CSS rectangle is the #1 failure here.** Only fall
+back to CSS for a *fanned deck* of 2–3 overlapping cards where the perspective,
+not the material, is the point.
 
 ## Reference-grade vs lazy
 - GREAT: a photoreal rendered hero card with real metallic/holographic material,

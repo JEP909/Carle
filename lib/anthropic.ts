@@ -247,7 +247,7 @@ export function buildKnowledgeSystem(
 import { readFileSync as _readFileSync } from "node:fs";
 import { join as _join } from "node:path";
 import { logoSvg } from "./logos";
-import { tokensToPlaceholders } from "./imagegen";
+import { tokensToPlaceholders, prefetchImages } from "./imagegen";
 const FONT_BLOCK: string = (() => {
   try {
     return _readFileSync(_join(process.cwd(), "assets", "font-geist.html"), "utf8");
@@ -295,7 +295,11 @@ export function toTextStream(
         tail = hold;
         // Logos resolve inline; image tokens become shimmer placeholders that
         // carry their prompt — the real render is composited at the judge step.
-        if (s) controller.enqueue(encoder.encode(tokensToPlaceholders(replaceLogoTokens(s))));
+        // Fire the render NOW (eager) so its ~14s overlaps the rest of the draft.
+        if (s) {
+          prefetchImages(s);
+          controller.enqueue(encoder.encode(tokensToPlaceholders(replaceLogoTokens(s))));
+        }
       };
 
       const flush = (text: string) => {

@@ -13,16 +13,29 @@ export type Plan = { component: string | null; recipes: string[] };
 
 const PLAN_SYSTEM = (recipeMenu: string, components: string[]) => `You are a
 build planner for a UI-card generator. Given a brief, pick the most relevant
-COMPONENT type and 1–2 RECIPES (construction guides) to load. Choose only what
-genuinely fits — fewer, well-matched picks beat many.
+COMPONENT type and the RECIPES (construction guides) to load.
 
 COMPONENTS: ${components.join(", ")}
 
-RECIPES (id: when to use):
+Decide in two steps:
+
+STEP 1 — SECTION TEMPLATES (check these FIRST). These render a whole proven
+section deterministically. If the brief matches one, return ONLY that recipe and
+nothing else:
+  - earn-cards: a row/grid of loyalty/rewards/offer/program cards (each = a brand
+    + a big number + a product render). Any "ways to earn", "partner cards",
+    "rewards", "points" section.
+  - platform-features: a feature SECTION with a heading and TWO feature cards that
+    have rich UI dioramas — e.g. a model/LLM-provider constellation card and/or an
+    agent/automation builder UI card. Any "the complete platform…" / two-card
+    product feature section. Pick this for the WHOLE section; do NOT instead pick
+    one diorama recipe per card.
+
+STEP 2 — Otherwise, pick 1–2 of these diorama recipes that fit a single card:
 ${recipeMenu}
 
 Respond ONLY as JSON: {"component": "<id or null>", "recipes": ["<id>", ...]}.
-Use null for component if none fits. recipes may be empty if none fits.`;
+Use null for component if none fits.`;
 
 export async function plan(brief: string): Promise<Plan> {
   const components = Object.keys(COMPONENT_SKILLS);

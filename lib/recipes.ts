@@ -21,7 +21,7 @@ export const RECIPES: Record<string, string> = load();
 
 // id -> one-line "when to use", for the planner to choose from cheaply.
 export const RECIPE_INDEX: Array<{ id: string; when: string }> = [
-  { id: "orbit-constellation", when: "connecting/orchestrating tools, an AI hub tying things together, integrations as a constellation, 'powered by many models'." },
+  { id: "orbit-constellation", when: "a SINGLE hub-and-spokes constellation diorama inside ONE card (tools/integrations orbiting a central hub). For a full multi-card section, prefer platform-features instead." },
   { id: "floating-subpanels", when: "a list/settings/schedule/summary with toggles or options, on a confident saturated color field (fintech, config, dashboards)." },
   { id: "rendered-cards", when: "a physical-object hero: payment cards, passes, devices, tickets, wallets — anything that wants a 3D rendered object." },
   { id: "logo-grid", when: "showing many real brand/platform integrations as logos in tiles (omnichannel, 'works with X/Y/Z')." },
@@ -29,6 +29,7 @@ export const RECIPE_INDEX: Array<{ id: string; when: string }> = [
   { id: "chat-diorama", when: "a conversation/support/agent-does-a-task flow shown as chat bubbles producing a result artifact." },
   { id: "linear-dark-app", when: "a refined DARK product surface (dev tools, workflow/issue tracking, technical SaaS, AI agents shown as a real app) — Linear-style glass panels on charcoal." },
   { id: "earn-cards", when: "loyalty/rewards/partner/offer cards: each item is a brand logo + a big 'earn up to N' number + a photoreal product/card render bleeding off the edge (Chexy 'more ways to earn')." },
+  { id: "platform-features", when: "a full feature SECTION with a heading and TWO feature cards that have rich UI dioramas — e.g. an LLM/model-provider constellation card + an agent-builder UI card (Chatbase 'the complete platform for AI support agents'). Prefer this for ANY two-card platform/product feature section." },
 ];
 
 export function recipesText(ids: string[]): string {

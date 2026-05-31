@@ -10,7 +10,7 @@ import { resolveComponent } from "@/lib/knowledge";
 import { expandBrief } from "@/lib/expand";
 import { plan } from "@/lib/planner";
 import { pickPalette, paletteText } from "@/lib/palette";
-import { pickTemplate } from "@/lib/templates";
+import { pickTemplate, templateFromBrief } from "@/lib/templates";
 import { compositeImages } from "@/lib/imagegen";
 
 const SPEC_MODEL = "claude-sonnet-4-6"; // content-only JSON; cheap + fast
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
   // The model only produces a content spec (JSON); the server renders the exact,
   // proven HTML and resolves logos + composites renders. No layout drift, and
   // faster (Sonnet spec + parallel renders) than a full Opus build.
-  const template = isTweak ? null : pickTemplate(recipes);
+  const template = isTweak ? null : (pickTemplate(recipes) ?? templateFromBrief(spec ?? ""));
   if (template && spec) {
     try {
       const res = await anthropic.messages.create({

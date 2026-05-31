@@ -27,17 +27,37 @@ familiar palette.
 - Use contrast intentionally for hierarchy: the most important element gets the
   most contrast; supporting elements recede.
 
-## Reference palettes (grounded)
-The premium product look is mostly **near-white canvas + near-black ink + one
-accent**, with color appearing as an ambient wash behind dioramas:
-- Canvas: `#ffffff` to `#fafafa`; ink `#0a0a0a`–`#111827`; muted text `#6b7280`;
-  hairlines `rgba(16,24,40,.08)`.
-- Accents seen: Stripe indigo/violet `#635bff` with teal glints; Chexy indigo
-  field `#3b2e7e`→`#5b4bc4` with lavender controls; Stan per-card grainy washes
-  (coral-red, gold, gray); Chatbase warm coral→pink→amber underglow on black.
-- A card may invert to a saturated field (Chexy) or a grainy colored wash (Stan)
-  while keeping floating white sub-panels inside it. Use one accent family per
-  card; let it glow, don't smear it everywhere.
+## The three canvas modes (grounded — pick ONE per card and commit)
+Studying Stripe, Linear, Chatbase, and Chexy: every reference commits to one of
+three canvas strategies. Choose the one that fits the brief, then stay disciplined
+inside it. A half-dark, half-tinted, muddy in-between is the tell.
+
+1. **Light monochrome** — Stripe (light), Chatbase. The default for most cards.
+   - Canvas `#ffffff`–`#fafafa`. Ink ramp from the zinc/slate family:
+     `#09090b` (zinc-950) headings · `#27272a` (zinc-800) / `#52525b` (zinc-600)
+     body · `#a1a1aa` (zinc-400) meta. Hairline borders `#e4e4e7` (zinc-200).
+   - Almost NO background gradient. Chatbase's whole page is near-monochrome zinc;
+     color enters through exactly ONE accent (a button, a link, a positive stat)
+     and through the **hero render's own color**. Tactility comes from rounding,
+     soft layered shadows, and inner highlights — not paint.
+
+2. **Dark glass** — Linear, Chatbase hero. Refined, high-contrast, "AI-era".
+   - Canvas deep charcoal/near-black `#08090c`–`#101114`. Raised surfaces are
+     `#16171b` glass panels with a `rgba(255,255,255,.06)` top highlight and a
+     `rgba(255,255,255,.08)` hairline.
+   - Ink `#f4f4f5` primary, `#a1a1aa` secondary. ONE bright accent used sparingly
+     (Linear's cyan/indigo); a subtle cyan→violet glow pooling behind the hero.
+     `mix-blend-mode: screen` for luminous glints. Ghost/text secondary buttons.
+
+3. **Saturated field** — Chexy. One confident color owns the card.
+   - A committed indigo/violet field (`#3b2e7e`→`#5b4bc4`) or another saturated
+     brand hue, with floating **white** sub-panels sitting on it (layered shadow,
+     so they lift). Lavender/tinted controls. The white panels carry the detail;
+     the field carries the brand.
+
+Use one accent family per card; let it glow in one place, don't smear it
+everywhere. Stripe's flowing gradient *mesh* is a heavier fourth move — reserve it
+for a true marketing hero, and keep it reading as light, not paint.
 
 ## Gradients & light (when the brief invites it)
 - A gradient should read as **light**, not paint: layered, soft, with a clear

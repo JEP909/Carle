@@ -5,28 +5,43 @@ Chexy, Chatbase, Vercel, Linear) read as studio-grade rather than AI-generated.
 These apply across every component — compose them; tune to the brief. They are
 techniques to reason with, not snippets to paste.
 
+## The hero is a render; CSS builds the scene (read this first)
+The single biggest quality lever: the focal OBJECT (a card, device, shield, orb,
+product) is a real `{{image:...}}` render — not a CSS shape (see the assets
+principle). These craft primitives build the *scene around it*: the floating
+panels, pills, charts, stats, type, and field. Don't try to fake a dimensional
+object in CSS when the brief calls for one; render it, then compose a dense,
+believable UI scene around it with the primitives below.
+
 ## The three finish details that separate good from great (always)
 1. ICONS: any brand/tool/platform glyph MUST be a REAL logo via `{{logo:NAME}}` —
    never hand-drawn letter-marks or generic shapes. No real logo available? Use a
    precise, literal custom icon (arrow, check, calendar) or leave it out. Never a
    sparkle/bolt as a hero glyph.
-2. SPACING: hold an 8px rhythm. Consistent padding inside elements, even gaps
-   between siblings, aligned to a shared grid. No cramped clusters, no uneven
-   gaps, no dead empty zones. Let the focal element breathe a little more than
-   the chrome.
-3. TYPE: Geist throughout, clean hierarchy — heading weight 600 tight tracking,
-   body 400 muted, one medium for emphasis; tabular figures for numbers. Don't
-   mix weights/sizes arbitrarily.
+2. SPACING & SHAPE: hold an 8px rhythm — consistent padding, even sibling gaps,
+   one shared grid, no cramped clusters or dead zones. And match the references'
+   ROUNDING: cards/panels are generously round (16–24px, i.e. rounded-2xl/3xl),
+   chips and buttons are **fully rounded pills** (`border-radius: 9999px`).
+   Chatbase is almost entirely pills + 2xl/3xl cards — sharp corners read as
+   unfinished.
+3. TYPE: Geist throughout, clean hierarchy — heading weight 600 tight tracking
+   (a very large hero headline can be 500/medium, Chatbase-style), body 400 muted,
+   one medium for emphasis; tabular figures for numbers. Don't mix arbitrarily.
 
 ## Floating panel
 The atom of premium product dioramas: a rounded rectangle that appears to hover
 above the surface.
-- Radius 12–18px. Surface white on light themes, a raised dark (`#16171f`-ish) on
-  dark themes.
+- Radius 16–24px (rounded-2xl/3xl). Surface white on light themes, a raised dark
+  (`#16171b`-ish) glass on dark themes.
 - Layered shadow, never a single flat one. Light theme example:
   `0 1px 2px rgba(16,24,40,.06), 0 12px 28px -12px rgba(16,24,40,.18)`.
-  Optionally a 1px hairline border (`rgba(16,24,40,.08)`) and an inner top
-  highlight (`inset 0 1px 0 rgba(255,255,255,.6)` light / `…,.06` dark).
+  Optionally a 1px hairline border (`#e4e4e7` / `rgba(255,255,255,.08)` on dark)
+  and an inner top highlight (`inset 0 1px 0 rgba(255,255,255,.6)` light / `…,.06`
+  dark).
+- **Inner-shadow tactility:** the references (Chatbase especially) lean on
+  `box-shadow: inset …` to make inputs, wells, tracks, and segmented controls
+  read as recessed/physical — e.g. an input well `inset 0 1px 2px rgba(16,24,40,.06)`.
+  This subtle inset is a big part of why their surfaces feel real.
 - Overlap 2–4 panels with small offsets to imply depth (a stack, a layered scene).
 
 ## Ambient wash / glow

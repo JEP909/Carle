@@ -16,6 +16,7 @@ const read = (...p: string[]) => readFileSync(join(KNOW, ...p), "utf8");
 // it frames everything). These form a stable cacheable prefix.
 const PRINCIPLE_FILES = [
   "typography",
+  "voice",
   "color",
   "layout",
   "craft-primitives",

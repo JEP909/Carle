@@ -9,26 +9,35 @@ from a 3D rendered hero object.
 Card issuing, payments, membership/passes, "use any card", wallet, physical
 product hero.
 
-## The construction (exact)
-- **Stage:** either a saturated field (indigo) or a deep spotlight gradient, with
-  a soft radial highlight near the top to read as a lit scene.
-- **The fanned deck:** 2–3 cards overlapping with **perspective tilt** (rotate
-  -14deg / -4deg / +7deg, slight scale falloff on the back ones) so they fan in
-  3D. Each card: 16px radius, a strong drop shadow (`0 18px 40px -14px
-  rgba(0,0,0,.55)`) so it lifts off the stage.
-- **Material variety across the deck:** one dark/matte, one metallic (silver
-  gradient #e9ebf0→#9aa0b0), one holographic (a 140deg coral→violet→teal gradient
-  with a `mix-blend-mode:screen` diagonal sheen streak). Add a chip
-  (gold gradient), a brand mark (real {{logo:visa}}/{{logo:mastercard}}/
-  {{logo:amex}} or a tasteful "VISA" wordmark), masked digits (•••• 0042).
-- **Front card gets an underglow:** a blurred accent ellipse behind it.
-- Optional small ✓ badges on the back cards (Chexy shows checkmarks), or a glass
-  status pill ("3 card types live").
+## The hero card is a RENDERED object — use {{image:...}}
+A metallic / holographic credit card with real sheen, depth, and material is the
+canonical thing CSS cannot fake. Render the hero card with an `{{image:...}}`
+token (see the "Rendered hero objects" principle). Build the stage and
+everything else around it in CSS.
+
+- **Stage:** a saturated field (indigo) or deep spotlight gradient, with a soft
+  radial highlight near the top so it reads as a lit scene, plus a blurred accent
+  underglow ellipse behind where the card sits.
+- **The hero render:** one container, tilted slightly, holding
+  `{{image:wide|a single premium credit card at a 25-degree 3D angle, <MATERIAL
+  matched to the brief: brushed titanium / matte black / iridescent holographic>
+  finish, gold EMV chip, subtle reflective sheen and soft motion, studio
+  lighting, soft realistic shadow}}`. Give the container a strong drop shadow so
+  the card lifts off the stage. Make it large — the clear focal point.
+- **Compose UI around it** in CSS: a glass status pill ("titanium • live"), a
+  small rewards row, a real brand mark ({{logo:visa}}/{{logo:mastercard}}) or a
+  tasteful wordmark in a corner panel — so the scene is dense, not just a floating
+  render on emptiness.
+
+(If the brief really wants a *fanned deck* of 2–3 cards and CSS perspective reads
+well enough, that's still acceptable — but for a single premium hero card, the
+{{image:}} render is the quality jump.)
 
 ## Reference-grade vs lazy
-- GREAT: real perspective, material differentiation, layered shadows, a sheen on
-  the holographic one, real chip/brand detail.
-- LAZY: flat upright rectangles with one color and no depth; no tilt; a single
-  card centered with nothing around it.
+- GREAT: a photoreal rendered hero card with real metallic/holographic material,
+  sitting on a lit saturated stage with underglow, surrounded by tight supporting
+  UI and crisp Geist copy.
+- LAZY: a flat upright CSS rectangle with one color and no depth; the render
+  floating alone in a big empty zone with nothing around it.
 
 Geist; copy anchored below with a tight headline + 2-line support.

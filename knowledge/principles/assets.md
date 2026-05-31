@@ -29,9 +29,32 @@ diagrams, "channels connected" scenes — wherever a real product would show the
 - Use inner highlights (`inset 0 1px 0 rgba(255,255,255,.6)`) and multi-stop
   shadows so surfaces feel lit, not pasted.
 
-## Imagery (when a photo is implied)
-You cannot fetch external photos (offline, self-contained). When a brief implies
-product photography, render a **tasteful, specific illustration in CSS/SVG** —
-a credit-card render with chip and gradient, a device frame, an abstract product
-form with real shadow — not a vague gray blob. Make it deliberate and on-brand.
-Keep it confident and reasonably large; do not leave big dead empty zones.
+## Rendered hero objects (the {{image:...}} token — use for the focal object)
+Some objects cannot be faked in CSS: a metallic credit card with real sheen and
+motion-blur, a dimensional 3D shield, a glossy device, a rendered product. For
+the card's ONE focal hero object, emit a **`{{image:PROMPT}}`** token. It is
+replaced server-side with a real photoreal render (transparent background) that
+drops straight onto your card — exactly like a {{logo:}} token, but for a
+rendered 3D object.
+
+- Describe the object precisely and concretely: material, finish, color, angle,
+  lighting. e.g. `{{image:a premium credit card at a 30-degree 3D angle, brushed
+  metal indigo finish with a gold EMV chip, subtle holographic sheen, soft studio
+  shadow}}`.
+- The render is ALWAYS an isolated object on a transparent field — never write
+  "on a white background" or "in a scene". It sits on YOUR card's color.
+- Place it inside a container with an **explicit size** — a fixed height or an
+  `aspect-ratio` (e.g. `aspect-ratio:16/10;width:78%`). The <img> fills the
+  container (object-fit:contain), so WITHOUT a sized parent it collapses to
+  nothing and you get an empty void. Give it real presence — large, the clear
+  focal point — with your own underglow / shadow / stage behind it.
+- Use it for the hero ONLY. **One**, occasionally two, per card. Everything else
+  (UI panels, charts, logos, type, layout) is still hand-built HTML/CSS — the
+  render is the one thing CSS can't do.
+- Aspect: default is square; prepend `wide|` or `tall|` for landscape/portrait
+  heroes, e.g. `{{image:wide|a sleek laptop ...}}`.
+
+When the object is SIMPLE enough to build cleanly in CSS/SVG (a flat card mock, a
+chip, an abstract gradient form), prefer hand-building it — it's instant and
+crisp. Reserve {{image:...}} for genuinely dimensional/photoreal objects that
+would look fake as CSS. Never leave a big dead empty zone either way.

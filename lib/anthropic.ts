@@ -247,6 +247,7 @@ export function buildKnowledgeSystem(
 import { readFileSync as _readFileSync } from "node:fs";
 import { join as _join } from "node:path";
 import { logoSvg } from "./logos";
+import { tokensToPlaceholders } from "./imagegen";
 const FONT_BLOCK: string = (() => {
   try {
     return _readFileSync(_join(process.cwd(), "assets", "font-geist.html"), "utf8");
@@ -292,7 +293,9 @@ export function toTextStream(
           s = s.slice(0, cut);
         }
         tail = hold;
-        if (s) controller.enqueue(encoder.encode(replaceLogoTokens(s)));
+        // Logos resolve inline; image tokens become shimmer placeholders that
+        // carry their prompt — the real render is composited at the judge step.
+        if (s) controller.enqueue(encoder.encode(tokensToPlaceholders(replaceLogoTokens(s))));
       };
 
       const flush = (text: string) => {
@@ -332,7 +335,7 @@ export function toTextStream(
           }
         }
         if (headBuffer) emit(headBuffer);
-        if (tail) controller.enqueue(encoder.encode(replaceLogoTokens(tail))); // flush remainder
+        if (tail) controller.enqueue(encoder.encode(tokensToPlaceholders(replaceLogoTokens(tail)))); // flush remainder
         await stream.finalMessage();
         controller.close();
       } catch (err) {

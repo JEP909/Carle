@@ -48,18 +48,23 @@ export function pickTemplate(recipeIds: string[]): Template | null {
 }
 
 // Deterministic fallback: the LLM planner is unreliable at routing these whole-
-// section patterns, so match the brief directly. Used when the planner didn't
-// already pick a template.
-export function templateFromBrief(brief: string): Template | null {
+// section patterns, so match the brief directly. Returns the template ID.
+export function templateIdFromBrief(brief: string): string | null {
   const b = brief.toLowerCase();
   if (/ways to earn|earn (up to|\d|more)|bonus points|rewards? program|partner (credit )?cards?|loyalty/.test(b)) {
-    return TEMPLATES["earn-cards"];
+    return "earn-cards";
   }
   if (
     /complete platform|platform for|feature section|two (feature )?cards/.test(b) ||
     (/constellation|llm|model providers?|integrations?/.test(b) && /agent|automation|build|workflow|simplicity/.test(b))
   ) {
-    return TEMPLATES["platform-features"];
+    return "platform-features";
   }
   return null;
+}
+
+// Used when the planner didn't already pick a template.
+export function templateFromBrief(brief: string): Template | null {
+  const id = templateIdFromBrief(brief);
+  return id ? TEMPLATES[id] : null;
 }

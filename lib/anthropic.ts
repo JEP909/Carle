@@ -211,13 +211,20 @@ export function buildKnowledgeSystem(
   mode: "generate" | "tweak",
   recipes: string[] = [],
   paletteBlock?: string,
+  brandBlock?: string,
 ): TextBlock[] {
   const blocks: TextBlock[] = [{ type: "text", text: PRINCIPLES_BUNDLE }];
   const skill = componentSkill(componentId);
   if (skill) blocks.push({ type: "text", text: skill });
+  // The brand identity (committed canvas mode + palette + voice) — injected so
+  // every section of a project shares ONE design language. Identical across a
+  // project's parallel sample builds, so it caches. Supersedes a bare palette.
+  if (mode === "generate" && brandBlock) {
+    blocks.push({ type: "text", text: brandBlock });
+  }
   // The committed per-card color identity (gives the card character vs a plain
-  // white box). Generate-only.
-  if (mode === "generate" && paletteBlock) {
+  // white box). Generate-only. Skipped when a brand block already sets color.
+  if (mode === "generate" && paletteBlock && !brandBlock) {
     blocks.push({ type: "text", text: paletteBlock });
   }
   // The planner-selected recipes: precise construction guides for the rich
@@ -264,12 +271,15 @@ const FONT_BLOCK: string = (() => {
 // We swap each token for the authentic inline SVG server-side.
 const LOGO_TOKEN = /\{\{logo:([a-z0-9]+)(?::(\d+))?(?::(#[0-9a-fA-F]{3,8}|currentColor))?\}\}/g;
 function replaceLogoTokens(s: string): string {
-  return s.replace(LOGO_TOKEN, (full, name, size, color) => {
-    const svg = logoSvg(name, size ? Number(size) : 28, color || undefined);
-    // Unknown brand: drop the token (a stray brand we don't have a vector for is
-    // better hidden than shown as raw `{{logo:...}}` text to the user).
-    return svg ?? "";
-  });
+  // Models sometimes URL-encode the '#' in a hex color (%23) — normalize it so
+  // the token matches.
+  s = s.replace(/(\{\{logo:[^}]*?)%23/g, "$1#");
+  s = s.replace(LOGO_TOKEN, (full, name, size, color) =>
+    logoSvg(name, size ? Number(size) : 28, color || undefined) ?? "",
+  );
+  // Catch-all: drop any leftover/malformed logo token so raw `{{logo:...}}` text
+  // never reaches the user (unknown brand, odd formatting, etc.).
+  return s.replace(/\{\{logo:[^}]*\}\}/g, "");
 }
 
 // Finalize a STATIC (non-streamed) HTML document the way the stream does, minus

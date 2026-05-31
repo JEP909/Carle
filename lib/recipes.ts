@@ -28,6 +28,7 @@ export const RECIPE_INDEX: Array<{ id: string; when: string }> = [
   { id: "dataviz", when: "a metric/stat with a chart, trend, or breakdown (revenue, usage, analytics, growth)." },
   { id: "chat-diorama", when: "a conversation/support/agent-does-a-task flow shown as chat bubbles producing a result artifact." },
   { id: "linear-dark-app", when: "a refined DARK product surface (dev tools, workflow/issue tracking, technical SaaS, AI agents shown as a real app) — Linear-style glass panels on charcoal." },
+  { id: "earn-cards", when: "loyalty/rewards/partner/offer cards: each item is a brand logo + a big 'earn up to N' number + a photoreal product/card render bleeding off the edge (Chexy 'more ways to earn')." },
 ];
 
 export function recipesText(ids: string[]): string {

@@ -5,6 +5,16 @@ safe, familiar, or like something produced a thousand times before, it is
 probably slop — choose the considered thing instead. This is a floor, not a
 style; it applies in every design language.
 
+## ABSOLUTELY FORBIDDEN: a physical product drawn in CSS
+A credit/payment/bank card, a phone or device, a wearable, a 3D shield/orb, or any
+solid physical product, **built out of `<div>`s and gradients, is the #1 flat-fake
+failure** — it always reads cheap and AI-made, no matter how carefully styled.
+Every such object MUST be a real `{{image:...}}` render (see the assets principle).
+If you catch yourself drawing a card body, a chip, a device frame, or a glossy
+object with CSS gradients, STOP and emit an `{{image:wide|...}}` token instead.
+A flat CSS rectangle standing in for a credit card is never acceptable — even a
+small one inside a layout.
+
 ## ABSOLUTELY FORBIDDEN: the generic AI icon glyphs
 Never, under any circumstances, draw or use any of these as an icon — they are
 the instant tell of AI-generated slop, zero exceptions:

@@ -11,6 +11,7 @@ import type { DesignLanguage } from "./design-language";
 import type { Structure } from "./structures";
 import { PRINCIPLES_BUNDLE, componentSkill } from "./knowledge";
 import { anchorsFor, type Anchor } from "./anchors";
+import { recipesText } from "./recipes";
 
 export const MODEL = "claude-opus-4-8";
 
@@ -205,10 +206,22 @@ ${examples}`;
 export function buildKnowledgeSystem(
   componentId: string | null,
   mode: "generate" | "tweak",
+  recipes: string[] = [],
 ): TextBlock[] {
   const blocks: TextBlock[] = [{ type: "text", text: PRINCIPLES_BUNDLE }];
   const skill = componentSkill(componentId);
   if (skill) blocks.push({ type: "text", text: skill });
+  // The planner-selected recipes: precise construction guides for the rich
+  // patterns this brief calls for (transcribed from the references).
+  if (mode === "generate" && recipes.length) {
+    const text = recipesText(recipes);
+    if (text) {
+      blocks.push({
+        type: "text",
+        text: `# Build recipes for this card (follow these closely)\n\n${text}`,
+      });
+    }
+  }
   // Anchors only help generation; on tweak we keep the current doc the focus.
   if (mode === "generate") {
     const anchors = anchorsFor(componentId);

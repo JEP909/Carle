@@ -6,6 +6,7 @@ import {
 } from "@/lib/anthropic";
 import { resolveComponent } from "@/lib/knowledge";
 import { expandBrief } from "@/lib/expand";
+import { plan } from "@/lib/planner";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -40,8 +41,16 @@ export async function POST(req: Request) {
   const spec =
     !isTweak && body.expand !== false ? await expandBrief(prompt!) : prompt;
 
-  const componentId = resolveComponent(body.component, spec ?? tweak);
-  const system = buildKnowledgeSystem(componentId, mode);
+  // Planner: pick the component + the recipe(s) that fit this brief, so only the
+  // relevant construction guides load into the build context.
+  let componentId = resolveComponent(body.component, spec ?? tweak);
+  let recipes: string[] = [];
+  if (!isTweak && spec) {
+    const p = await plan(spec);
+    if (p.component) componentId = p.component;
+    recipes = p.recipes;
+  }
+  const system = buildKnowledgeSystem(componentId, mode, recipes);
 
   const userContent = isTweak
     ? `Here is the current component:\n\n${current}\n\nApply this change and return the full updated document:\n\n${tweak}`

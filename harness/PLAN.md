@@ -1,56 +1,68 @@
-# Carle Harness Plan — Visual Quality Loop
+# Carle Harness Plan v2 — MD Recipe Library + Planner + Visual Judge
 
-## The vision (user's words)
-Type plain English ("a website for an AI agent real estate SaaS company") →
-get cards that look like the references → "Is this good?" → Confirm →
-trains an agent on it → build the entire website with that context.
+## The vision (unchanged)
+Type plain English ("a website for an AI agent real estate SaaS") -> cards that
+look like the references -> "Is this good?" -> Confirm -> train an agent ->
+build the whole site. References are OUR baked-in taste; the user only types.
 
-## Core diagnosis
-The system has no VISION. It generates from prose + my hand-built anchors, and
-the quality gate only greps HTML for banned strings — it has never *seen* a
-rendered card or a reference. The thing that made quality jump in this project
-was always: render → look at pixels → compare to target → fix. That capability
-is missing from the machine. We add it.
+## Core architecture (decided with user)
+Words guide the build; pixels verify it.
+- MD KNOWLEDGE LIBRARY = the "how to build rich things" brain. A deep, organized
+  set of MD files the model consults.
+- PLANNER = a fast pass that reads the brief and SELECTS which recipe + component
+  MDs are relevant, so only those load into the build context (scales without
+  bloating every prompt).
+- VISUAL JUDGE (already built) = renders the card and scores it on pixels vs the
+  rubric/reference bar; revises against what it SAW. The eyes prose can't give.
 
-Also: references are OUR build-time asset, never the user's runtime burden. The
-user only types English. We bake the reference taste into the harness.
+Why both: MD files alone drift to generic (words about images). The visual judge
+is what moved quality every time (67->84). MD library makes the FIRST draft rich
+(start ~80 not ~67); the judge catches what prose can't.
 
-Decisions locked with user:
-- Encourage RICH execution (Chatbase-grade: underglow, constellations, sparkles,
-  dimensional objects) — the earlier blanket bans were the mistake.
-- Rubric defined as 4 buckets per archetype: must-have / must-avoid /
-  should-match / should-not-match.
-- Feature-card rubric approved (see below).
+## MD library structure (3 layers)
+1. Always-on principles (the floor): typography, color, layout, craft-primitives,
+   motion, anti-slop, assets. (Exist; to be deepened.)
+2. RECIPE files (NEW depth) — one per technique, transcribed PRECISELY from the
+   user's real references:
+   - recipe-orbit-constellation.md  (Chatbase: dotted-circle orbit, floating
+     B/I/U/S toolbar, black "Create agent" pill with coral->magenta gradient
+     UNDERGLOW ~12px below, overlapping green/lime dots, "Reply with AI" outlined
+     pill w/ sparkle, green toggle)
+   - recipe-floating-subpanels.md   (Chexy: saturated indigo field #3b2e7e->#5b4bc4,
+     white floating sub-panels w/ real shadows, lavender toggles, green logo,
+     payment-summary panel, green cashback check)
+   - recipe-rendered-cards.md       (Chexy/credit-card deck: fanned cards w/
+     perspective, metallic/holographic, motion-blur depth, brand logos)
+   - recipe-logo-grid.md            (Chatbase omnichannel: real logos in white
+     tiles on a watercolor field)
+   - recipe-dataviz.md              (Stripe: bars w/ detached caps, smooth trend
+     line, area fill, endpoint dot)
+   - recipe-chat-diorama.md         (Chatbase smart-escalation: chat bubbles ->
+     ticket card w/ gradient bottom edge)
+   Each recipe: when-to-use, exact construction, the depth/underglow/material
+   details, and what makes it reference-grade vs lazy.
+3. Component files (per card type): feature, pricing, hero, stat, testimonial,
+   cta — reference the recipes.
 
-## Build steps
-1. Rubric module (lib/rubric.ts): structured params per archetype. Start with
-   the approved feature-card rubric.
-2. Reference standard baked in: the rubric's "should-match" encodes the
-   reference taste in words; (optional later) store reference images for the
-   judge to compare against.
-3. Render step: reuse the Playwright screenshot pipeline to turn generated HTML
-   into a PNG.
-4. VISUAL judge (lib/visual-judge.ts): a vision model looks at the rendered PNG
-   against the rubric and returns specific visual failures + a pass/fail.
-5. Revise loop: feed the visual failures back to the model; regenerate; re-judge;
-   up to N rounds. Replaces/absorbs the text-only slop-gate.
-6. Prove it: generate a feature card end-to-end through the visual loop and
-   show the user. Tune the rubric against real output.
+## Planner (selection mechanism)
+lib/planner.ts: a fast Sonnet pass takes the (expanded) brief and returns which
+component + which recipe MD(s) to load. Only those get injected into the build
+system prompt. Keeps context sharp as the library grows.
 
-## Approved: Feature Card rubric
-MUST HAVE: a product diorama (not a single icon); one clear focal object; dense
-real micro-content (no lorem); real brand logos via tokens; copy anchored below
-(tight headline + 2-line support).
-MUST AVOID: flat single-icon-above-text; dead empty zones; lorem/filler;
-hand-drawn brand glyphs.
-SHOULD MATCH: real depth (layered shadows, floating panels); tasteful richness
-when it fits (gradient sheen, underglow, constellations — Chatbase bar); Geist
-type, restrained palette + one accent; fragment vocab (tiles, pills, toggles,
-charts, chat bubbles).
-SHOULD NOT MATCH: generic AI-startup look; cream/serif editorial default; thin
-flat CSS gestures; rainbow candy pills.
+## Build order (decided)
+1. Transcribe the 4 sent references into precise recipe MDs (orbit-constellation,
+   floating-subpanels, rendered-cards, logo-grid; + dataviz, chat-diorama from
+   earlier refs). I read the actual images; encode their visual DNA exactly.
+2. Build lib/planner.ts (brief -> selected MDs) + a recipe registry.
+3. Wire generate to: expand -> plan(select MDs) -> build with those MDs -> visual
+   judge -> revise. Raise judge bar (~88) and allow 2-3 revise rounds.
+4. Prove it: generate the user's kind of brief end-to-end, show before/after.
 
-## Not now (later stages of the product roadmap)
-- Other archetype rubrics (pricing/hero/stat) — tune after seeing feature output.
-- Train-agent-on-blessed-cards (Stage 2) and site assembly (Stage 3).
-- The polished app UI.
+## Note on references-as-files
+User pastes references as chat images; I can SEE them but can't write the pasted
+bytes to disk. So recipes are my precise transcription of the real images (best
+available). If real image FILES are ever committed to reference/images/, wire the
+judge to load and compare against literal pixels too.
+
+## Later (product roadmap, not now)
+Bless/save (built) -> train agent on blessed set -> site assembly -> app UI.

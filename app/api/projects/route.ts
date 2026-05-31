@@ -1,10 +1,17 @@
-import { saveProject, listProjects } from "@/lib/project";
+import { saveProject, listProjects, getProject } from "@/lib/project";
 
 export const runtime = "nodejs";
 
-// GET  -> list saved projects
-// POST {brand, samples} -> persist a confirmed project
-export async function GET() {
+// GET            -> list saved projects
+// GET ?id=<id>   -> one full project (brand + samples) — reopen the trained agent
+// POST {brand, samples} -> persist (or update) a project
+export async function GET(req: Request) {
+  const id = new URL(req.url).searchParams.get("id");
+  if (id) {
+    const project = getProject(id);
+    if (!project) return Response.json({ error: "Not found." }, { status: 404 });
+    return Response.json(project, { headers: { "Cache-Control": "no-store" } });
+  }
   return Response.json({ projects: listProjects() }, { headers: { "Cache-Control": "no-store" } });
 }
 

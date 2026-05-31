@@ -2,6 +2,7 @@ import { anthropic, buildKnowledgeSystem, finalizeStaticHtml, hasApiKey } from "
 import { compositeImages } from "@/lib/imagegen";
 import { TEMPLATES } from "@/lib/templates";
 import { brandSystemBlock, brandSpecInstruction, type BrandProfile, type SectionPlan } from "@/lib/brand";
+import { templateIdFromBrief } from "@/lib/templates";
 import { plan } from "@/lib/planner";
 import { resolveComponent } from "@/lib/knowledge";
 import { paletteText } from "@/lib/palette";
@@ -93,6 +94,8 @@ async function pooled<T, R>(items: T[], limit: number, fn: (x: T) => Promise<R>)
 
 // POST {brand}            -> build all sections (in the brand)
 // POST {brand, only:id}   -> rebuild a single section (regenerate-one)
+// POST {brand, addBrief}  -> build ONE new section from a brief, in the brand
+//                            (the "agent keeps building in your language" loop)
 export async function POST(req: Request) {
   if (!hasApiKey()) {
     return Response.json({ error: "ANTHROPIC_API_KEY is not set." }, { status: 503 });
@@ -100,12 +103,28 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const brand: BrandProfile | undefined = body.brand;
   const only: string | undefined = body.only;
+  const addBrief: string | undefined = body.addBrief?.trim();
   if (!brand || !Array.isArray(brand.sections)) {
     return Response.json({ error: "No brand profile provided." }, { status: 400 });
   }
 
   // Tier resolution: explicit request override -> the agent's saved tier -> default.
   const tier: Tier = isTier(body.tier) ? body.tier : brand.tier ?? defaultTier();
+
+  // A new section from a free-text brief, built in the existing brand.
+  if (addBrief) {
+    const section: SectionPlan = {
+      id: `sec_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
+      label: addBrief.length > 32 ? addBrief.slice(0, 30) + "…" : addBrief,
+      brief: addBrief,
+      template: brand.canvasMode === "light-monochrome" ? templateIdFromBrief(addBrief) : null,
+    };
+    const b = await buildSection(brand, section, tier);
+    return Response.json(
+      { samples: [{ id: b.id, label: b.label, html: b.html }], cost: { usd: Number(b.usd.toFixed(4)), credits: toCredits(b.usd), tier } },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
 
   const sections = only ? brand.sections.filter((s) => s.id === only) : brand.sections;
   const built = await pooled(sections, 3, (s) => buildSection(brand, s, tier));

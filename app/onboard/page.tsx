@@ -214,7 +214,8 @@ export default function Onboard() {
         {phase === "done" && (
           <section style={S.card}>
             <div style={S.brandName}>Your agent is ready.</div>
-            <p style={S.tag}>It knows {brand?.name}&apos;s design system — {brand?.canvasMode}, its palette, voice, and these sample sections. Next: the vibecoding workspace.</p>
+            <p style={S.tag}>It knows {brand?.name}&apos;s design system — {brand?.canvasMode}, its palette, voice, and these sample sections.</p>
+            <a href="/projects" style={{ ...S.primary, display: "inline-block", textDecoration: "none", marginTop: 8 }}>Open my agent →</a>
           </section>
         )}
 

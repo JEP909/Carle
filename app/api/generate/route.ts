@@ -5,6 +5,7 @@ import {
   hasApiKey,
 } from "@/lib/anthropic";
 import { resolveComponent } from "@/lib/knowledge";
+import { expandBrief } from "@/lib/expand";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -32,12 +33,19 @@ export async function POST(req: Request) {
   }
 
   const mode = isTweak ? "tweak" : "generate";
-  const componentId = resolveComponent(body.component, prompt ?? tweak);
+
+  // Move the prompting burden to the system: expand a casual brief into a rich
+  // internal spec before generating. (Skip for tweaks and when the caller opts
+  // out via { expand: false } — e.g. the harness running pre-written briefs.)
+  const spec =
+    !isTweak && body.expand !== false ? await expandBrief(prompt!) : prompt;
+
+  const componentId = resolveComponent(body.component, spec ?? tweak);
   const system = buildKnowledgeSystem(componentId, mode);
 
   const userContent = isTweak
     ? `Here is the current component:\n\n${current}\n\nApply this change and return the full updated document:\n\n${tweak}`
-    : prompt!;
+    : spec!;
 
   const stream = toTextStream({
     model: MODEL,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 // Strip a leading ```html fence and a trailing ``` if the model ever adds them,
 // and pull out the inline error sentinel the server stream emits on failure.
@@ -43,14 +43,44 @@ export default function Carle() {
   const [vibe, setVibe] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [savedCount, setSavedCount] = useState(0);
+  const [justSaved, setJustSaved] = useState(false);
   const busy =
     phase === "building" || phase === "checking" || phase === "training";
   const iframeKey = useRef(0);
+
+  // Load how many cards are already in the taste corpus.
+  useEffect(() => {
+    fetch("/api/vibes")
+      .then((r) => r.json())
+      .then((d) => setSavedCount(d.vibes?.length ?? 0))
+      .catch(() => {});
+  }, []);
+
+  // Bless the current card: save it to the taste corpus the agent trains on.
+  const bless = useCallback(async () => {
+    if (!html || busy) return;
+    setJustSaved(false);
+    try {
+      const res = await fetch("/api/vibes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ html, brief: prompt }),
+      });
+      if (res.ok) {
+        setSavedCount((n) => n + 1);
+        setJustSaved(true);
+      }
+    } catch {
+      /* best-effort */
+    }
+  }, [html, prompt, busy]);
 
   const generate = useCallback(async () => {
     if (!prompt.trim() || busy) return;
     setError(null);
     setVibe("");
+    setJustSaved(false);
     setPhase("building");
     setHtml("");
     try {
@@ -206,10 +236,19 @@ export default function Carle() {
               <button className="btn ghost" onClick={applyTweak} disabled={busy || !tweak.trim()}>
                 Apply tweak
               </button>
-              <button className="btn" onClick={train} disabled={busy}>
-                {phase === "training" ? "Training…" : "Lock & train agent"}
+              <button
+                className={"btn love" + (justSaved ? " saved" : "")}
+                onClick={bless}
+                disabled={busy}
+              >
+                {justSaved ? "♥ Saved to your taste" : "♥ Love it — save"}
               </button>
             </div>
+            <p className="lede taste-count">
+              {savedCount === 0
+                ? "Save the cards you love. Once you've taught Carle your taste, it can train an agent to build your whole site."
+                : `${savedCount} card${savedCount === 1 ? "" : "s"} in your taste — keep saving the ones you love, then train your agent.`}
+            </p>
           </>
         )}
 

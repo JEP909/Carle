@@ -104,6 +104,9 @@ textarea { min-height: 96px; }
 .btn:hover:not(:disabled) { transform: translateY(-1px); }
 .btn.accent { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn.ghost { background: transparent; color: var(--ink); }
+.btn.love { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.love.saved { background: #1f7a4d; border-color: #1f7a4d; }
+.taste-count { font-size: 12.5px; line-height: 1.45; color: var(--muted); margin-top: 2px; }
 
 .row { display: flex; gap: 10px; flex-wrap: wrap; }
 

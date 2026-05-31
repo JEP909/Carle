@@ -48,12 +48,14 @@ export default function Onboard() {
   const [samples, setSamples] = useState<Sample[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cost, setCost] = useState<{ usd: number; credits: number } | null>(null);
 
   const buildSamples = useCallback(async (b: Brand) => {
     setPhase("samples");
     try {
-      const { samples } = await postJSON<{ samples: Sample[] }>("/api/samples", { brand: b });
+      const { samples, cost } = await postJSON<{ samples: Sample[]; cost?: { usd: number; credits: number } }>("/api/samples", { brand: b });
       setSamples(samples);
+      if (cost) setCost(cost);
       setPhase("review");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -195,6 +197,11 @@ export default function Onboard() {
                 </div>
               ))}
             </div>
+            {cost && (
+              <div style={S.cost}>
+                {samples.length} sections · est. ${cost.usd.toFixed(2)} API cost · {cost.credits} credits
+              </div>
+            )}
             <div style={S.actions}>
               <button style={S.ghost} onClick={tweakBrand} disabled={phase === "confirming"}>Tweak brand</button>
               <button style={S.primary} onClick={confirm} disabled={phase === "confirming" || !samples.length}>
@@ -240,6 +247,7 @@ const S: Record<string, React.CSSProperties> = {
   mini: { background: "transparent", color: "#9a9ca6", border: "1px solid #2a2c34", borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer" },
   spin: { color: "#7e80f0", fontSize: 12 },
   skeleton: { height: 300, borderRadius: 14, background: "linear-gradient(110deg,#15161c,#1b1d24,#15161c)" },
-  actions: { display: "flex", justifyContent: "center", gap: 12, marginTop: 28 },
+  cost: { textAlign: "center", color: "#9a9ca6", fontSize: 13, marginTop: 24 },
+  actions: { display: "flex", justifyContent: "center", gap: 12, marginTop: 16 },
   error: { marginTop: 18, color: "#ff8a8a", fontSize: 14 },
 };

@@ -6,11 +6,17 @@ import { plan } from "@/lib/planner";
 import { resolveComponent } from "@/lib/knowledge";
 import { paletteText } from "@/lib/palette";
 import { type Tier, modelFor, defaultTier, isTier } from "@/lib/models";
+import { usdForCall, usdForImages, toCredits, type TokenUsage } from "@/lib/cost";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
 type Sample = { id: string; label: string; html: string };
+type Built = Sample & { usd: number };
+
+function imagesIn(html: string): number {
+  return (html.match(/src="data:image/g) ?? []).length;
+}
 
 function textOf(res: { content: Array<{ type: string; text?: string }> }): string {
   const t = res.content.find((b) => b.type === "text");
@@ -20,13 +26,14 @@ function textOf(res: { content: Array<{ type: string; text?: string }> }): strin
 // Build one section in the brand's design language. Templated patterns take the
 // fast deterministic path (Sonnet content spec -> coded layout); everything else
 // is a free Opus build with the brand block injected for cohesion.
-async function buildSection(brand: BrandProfile, section: SectionPlan, tier: Tier): Promise<Sample> {
+async function buildSection(brand: BrandProfile, section: SectionPlan, tier: Tier): Promise<Built> {
   // ---- Templated (fast, deterministic layout) ----
   if (section.template && TEMPLATES[section.template]) {
     const tmpl = TEMPLATES[section.template];
     try {
+      const specModel = modelFor("spec", tier);
       const res = await anthropic.messages.create({
-        model: modelFor("spec", tier),
+        model: specModel,
         max_tokens: 2000,
         system: brandSpecInstruction(brand) + tmpl.instruction,
         messages: [{ role: "user", content: section.brief }],
@@ -34,7 +41,9 @@ async function buildSection(brand: BrandProfile, section: SectionPlan, tier: Tie
       const html = tmpl.build(textOf(res));
       if (html) {
         const withAssets = finalizeStaticHtml(html).replace(/\{\{logo:[^}]*\}\}/g, "");
-        return { id: section.id, label: section.label, html: await compositeImages(withAssets) };
+        const finalHtml = await compositeImages(withAssets);
+        const usd = usdForCall(specModel, (res as { usage?: TokenUsage }).usage ?? {}) + usdForImages(imagesIn(finalHtml));
+        return { id: section.id, label: section.label, html: finalHtml, usd };
       }
     } catch {
       // fall through to free-build
@@ -42,6 +51,7 @@ async function buildSection(brand: BrandProfile, section: SectionPlan, tier: Tie
   }
 
   // ---- Free build (brand-injected, recipe-planned) ----
+  const buildModel = modelFor("build", tier);
   const p = await plan(section.brief, tier).catch(() => ({ component: null, recipes: [] as string[] }));
   const component = resolveComponent(p.component, section.brief);
   const system = buildKnowledgeSystem(
@@ -52,7 +62,7 @@ async function buildSection(brand: BrandProfile, section: SectionPlan, tier: Tie
     brandSystemBlock(brand),
   );
   const res = await anthropic.messages.create({
-    model: modelFor("build", tier),
+    model: buildModel,
     max_tokens: 16000,
     thinking: { type: "disabled" },
     system,
@@ -62,7 +72,8 @@ async function buildSection(brand: BrandProfile, section: SectionPlan, tier: Tie
   const i = raw.indexOf("<");
   if (i > 0) raw = raw.slice(i);
   const finalHtml = await compositeImages(finalizeStaticHtml(raw));
-  return { id: section.id, label: section.label, html: finalHtml };
+  const usd = usdForCall(buildModel, (res as { usage?: TokenUsage }).usage ?? {}) + usdForImages(imagesIn(finalHtml));
+  return { id: section.id, label: section.label, html: finalHtml, usd };
 }
 
 // Run jobs with bounded concurrency (avoid hammering the Opus rate limit with N
@@ -97,6 +108,11 @@ export async function POST(req: Request) {
   const tier: Tier = isTier(body.tier) ? body.tier : brand.tier ?? defaultTier();
 
   const sections = only ? brand.sections.filter((s) => s.id === only) : brand.sections;
-  const samples = await pooled(sections, 3, (s) => buildSection(brand, s, tier));
-  return Response.json({ samples }, { headers: { "Cache-Control": "no-store" } });
+  const built = await pooled(sections, 3, (s) => buildSection(brand, s, tier));
+  const usd = built.reduce((sum, b) => sum + b.usd, 0);
+  const samples: Sample[] = built.map(({ id, label, html }) => ({ id, label, html }));
+  return Response.json(
+    { samples, cost: { usd: Number(usd.toFixed(4)), credits: toCredits(usd), tier } },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }

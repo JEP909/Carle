@@ -1,13 +1,12 @@
 import { anthropic } from "./anthropic";
 import { recipeMenuText, RECIPES } from "./recipes";
 import { COMPONENT_SKILLS } from "./knowledge";
+import { type Tier, modelFor, defaultTier } from "./models";
 
 // The planner — reads the (expanded) brief and SELECTS which component skill and
 // which recipe(s) are relevant, so only those load into the build context. This
 // is what lets the MD library grow deep without bloating every prompt: the model
 // consults the right docs for the task, like an agent.
-
-const PLAN_MODEL = "claude-sonnet-4-6"; // fast + cheap; selection, not generation
 
 export type Plan = { component: string | null; recipes: string[] };
 
@@ -37,11 +36,11 @@ ${recipeMenu}
 Respond ONLY as JSON: {"component": "<id or null>", "recipes": ["<id>", ...]}.
 Use null for component if none fits.`;
 
-export async function plan(brief: string): Promise<Plan> {
+export async function plan(brief: string, tier: Tier = defaultTier()): Promise<Plan> {
   const components = Object.keys(COMPONENT_SKILLS);
   try {
     const res = await anthropic.messages.create({
-      model: PLAN_MODEL,
+      model: modelFor("aux", tier),
       max_tokens: 200,
       system: PLAN_SYSTEM(recipeMenuText(), components),
       messages: [{ role: "user", content: brief }],

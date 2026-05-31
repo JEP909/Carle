@@ -1,5 +1,4 @@
 import {
-  MODEL,
   anthropic,
   buildKnowledgeSystem,
   finalizeStaticHtml,
@@ -12,8 +11,7 @@ import { plan } from "@/lib/planner";
 import { pickPalette, paletteText } from "@/lib/palette";
 import { pickTemplate, templateFromBrief } from "@/lib/templates";
 import { compositeImages } from "@/lib/imagegen";
-
-const SPEC_MODEL = "claude-sonnet-4-6"; // content-only JSON; cheap + fast
+import { type Tier, modelFor, defaultTier, isTier } from "@/lib/models";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -41,6 +39,7 @@ export async function POST(req: Request) {
   }
 
   const mode = isTweak ? "tweak" : "generate";
+  const tier: Tier = isTier(body.tier) ? body.tier : defaultTier();
 
   // Move the prompting burden to the system: expand a casual brief into a rich
   // internal spec before generating. (Skip for tweaks and when the caller opts
@@ -54,7 +53,7 @@ export async function POST(req: Request) {
   let recipes: string[] = [];
   let paletteBlock: string | undefined;
   if (!isTweak && spec) {
-    const [p, pal] = await Promise.all([plan(spec), pickPalette(spec)]);
+    const [p, pal] = await Promise.all([plan(spec, tier), pickPalette(spec)]);
     if (p.component) componentId = p.component;
     recipes = p.recipes;
     if (pal) paletteBlock = paletteText(pal);
@@ -68,7 +67,7 @@ export async function POST(req: Request) {
   if (template && spec) {
     try {
       const res = await anthropic.messages.create({
-        model: SPEC_MODEL,
+        model: modelFor("spec", tier),
         max_tokens: 2000,
         system: template.instruction,
         messages: [{ role: "user", content: spec }],
@@ -102,7 +101,7 @@ export async function POST(req: Request) {
     : spec!;
 
   const stream = toTextStream({
-    model: MODEL,
+    model: modelFor("build", tier),
     max_tokens: 16000,
     thinking: { type: "disabled" },
     system,

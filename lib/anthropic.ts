@@ -213,15 +213,22 @@ export function buildKnowledgeSystem(
   paletteBlock?: string,
   brandBlock?: string,
 ): TextBlock[] {
-  const blocks: TextBlock[] = [{ type: "text", text: PRINCIPLES_BUNDLE }];
+  // Cache breakpoints, ordered most-stable-first so prefixes are reused:
+  //  1) PRINCIPLES_BUNDLE — identical on EVERY request, ever (biggest static block).
+  //  2) brand block — identical across all of a project's section builds.
+  //  3) the contract (below) — caches the full prefix for an identical repeat.
+  // Caching bills the cached prefix at ~10% on hits, which is the single biggest
+  // cost cut for the parallel sample batch and repeated generations.
+  const blocks: TextBlock[] = [
+    { type: "text", text: PRINCIPLES_BUNDLE, cache_control: { type: "ephemeral" } },
+  ];
+  // Brand goes right after principles (before the per-section skill) so the
+  // principles+brand prefix is identical across a project's sections and caches.
+  if (mode === "generate" && brandBlock) {
+    blocks.push({ type: "text", text: brandBlock, cache_control: { type: "ephemeral" } });
+  }
   const skill = componentSkill(componentId);
   if (skill) blocks.push({ type: "text", text: skill });
-  // The brand identity (committed canvas mode + palette + voice) — injected so
-  // every section of a project shares ONE design language. Identical across a
-  // project's parallel sample builds, so it caches. Supersedes a bare palette.
-  if (mode === "generate" && brandBlock) {
-    blocks.push({ type: "text", text: brandBlock });
-  }
   // The committed per-card color identity (gives the card character vs a plain
   // white box). Generate-only. Skipped when a brand block already sets color.
   if (mode === "generate" && paletteBlock && !brandBlock) {

@@ -38,9 +38,12 @@ function Preview({ html }: { html: string }) {
   );
 }
 
+type Tier = "economy" | "standard" | "premium";
+
 export default function Onboard() {
   const [phase, setPhase] = useState<Phase>("intake");
   const [business, setBusiness] = useState("");
+  const [tier, setTier] = useState<Tier>("standard");
   const [brand, setBrand] = useState<Brand | null>(null);
   const [samples, setSamples] = useState<Sample[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -63,7 +66,7 @@ export default function Onboard() {
     setError(null);
     setPhase("brand");
     try {
-      const b = await postJSON<Brand>("/api/brand", { business });
+      const b = await postJSON<Brand>("/api/brand", { business, tier });
       setBrand(b);
       await buildSamples(b);
     } catch (e) {
@@ -133,6 +136,19 @@ export default function Onboard() {
               onChange={(e) => setBusiness(e.target.value)}
               disabled={working}
             />
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14 }}>
+              <span style={{ fontSize: 13, color: "#9a9ca6" }}>Model tier</span>
+              <select
+                value={tier}
+                onChange={(e) => setTier(e.target.value as Tier)}
+                disabled={working}
+                style={{ background: "#0b0c0f", color: "#e8e8ec", border: "1px solid #2a2c34", borderRadius: 8, padding: "8px 10px", fontSize: 13 }}
+              >
+                <option value="economy">Economy — cheapest</option>
+                <option value="standard">Standard — balanced</option>
+                <option value="premium">Premium — best quality</option>
+              </select>
+            </div>
             <button style={{ ...S.primary, opacity: working || !business.trim() ? 0.5 : 1 }} onClick={start} disabled={working || !business.trim()}>
               {phase === "brand" ? "Designing your brand…" : "Create my brand →"}
             </button>

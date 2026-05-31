@@ -1,15 +1,14 @@
-import { MODEL, anthropic, buildKnowledgeSystem, finalizeStaticHtml, hasApiKey } from "@/lib/anthropic";
+import { anthropic, buildKnowledgeSystem, finalizeStaticHtml, hasApiKey } from "@/lib/anthropic";
 import { compositeImages } from "@/lib/imagegen";
 import { TEMPLATES } from "@/lib/templates";
 import { brandSystemBlock, brandSpecInstruction, type BrandProfile, type SectionPlan } from "@/lib/brand";
 import { plan } from "@/lib/planner";
 import { resolveComponent } from "@/lib/knowledge";
 import { paletteText } from "@/lib/palette";
+import { type Tier, modelFor, defaultTier, isTier } from "@/lib/models";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
-
-const SPEC_MODEL = "claude-sonnet-4-6"; // template content specs — fast + cheap
 
 type Sample = { id: string; label: string; html: string };
 
@@ -21,13 +20,13 @@ function textOf(res: { content: Array<{ type: string; text?: string }> }): strin
 // Build one section in the brand's design language. Templated patterns take the
 // fast deterministic path (Sonnet content spec -> coded layout); everything else
 // is a free Opus build with the brand block injected for cohesion.
-async function buildSection(brand: BrandProfile, section: SectionPlan): Promise<Sample> {
+async function buildSection(brand: BrandProfile, section: SectionPlan, tier: Tier): Promise<Sample> {
   // ---- Templated (fast, deterministic layout) ----
   if (section.template && TEMPLATES[section.template]) {
     const tmpl = TEMPLATES[section.template];
     try {
       const res = await anthropic.messages.create({
-        model: SPEC_MODEL,
+        model: modelFor("spec", tier),
         max_tokens: 2000,
         system: brandSpecInstruction(brand) + tmpl.instruction,
         messages: [{ role: "user", content: section.brief }],
@@ -43,7 +42,7 @@ async function buildSection(brand: BrandProfile, section: SectionPlan): Promise<
   }
 
   // ---- Free build (brand-injected, recipe-planned) ----
-  const p = await plan(section.brief).catch(() => ({ component: null, recipes: [] as string[] }));
+  const p = await plan(section.brief, tier).catch(() => ({ component: null, recipes: [] as string[] }));
   const component = resolveComponent(p.component, section.brief);
   const system = buildKnowledgeSystem(
     component,
@@ -53,7 +52,7 @@ async function buildSection(brand: BrandProfile, section: SectionPlan): Promise<
     brandSystemBlock(brand),
   );
   const res = await anthropic.messages.create({
-    model: MODEL,
+    model: modelFor("build", tier),
     max_tokens: 16000,
     thinking: { type: "disabled" },
     system,
@@ -94,7 +93,10 @@ export async function POST(req: Request) {
     return Response.json({ error: "No brand profile provided." }, { status: 400 });
   }
 
+  // Tier resolution: explicit request override -> the agent's saved tier -> default.
+  const tier: Tier = isTier(body.tier) ? body.tier : brand.tier ?? defaultTier();
+
   const sections = only ? brand.sections.filter((s) => s.id === only) : brand.sections;
-  const samples = await pooled(sections, 3, (s) => buildSection(brand, s));
+  const samples = await pooled(sections, 3, (s) => buildSection(brand, s, tier));
   return Response.json({ samples }, { headers: { "Cache-Control": "no-store" } });
 }

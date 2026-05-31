@@ -2,6 +2,7 @@ import { anthropic } from "./anthropic";
 import { type Palette, paletteText } from "./palette";
 import { templateIdFromBrief } from "./templates";
 import { type ArtDirectionId, artDirectionBlock, canvasModeFor } from "./art-directions";
+import { type Tier, modelFor, defaultTier } from "./models";
 
 // ---------------------------------------------------------------------------
 // BrandProfile — the persisted design identity that makes a user's agent
@@ -35,10 +36,9 @@ export type BrandProfile = {
   voice: string[];
   accent: string; // single canonical accent hex
   sections: SectionPlan[];
+  tier: Tier; // the agent's default model tier (cheaper/pricier)
   createdAt: string;
 };
-
-const BRAND_MODEL = "claude-sonnet-4-6"; // a design call, not generation — fast + cheap
 
 const BRAND_SYSTEM = `You are a senior brand & product designer at the level of
 the teams behind Stripe, Linear, Chatbase, and Chexy. Given a short description of
@@ -118,12 +118,16 @@ function planSections(
   });
 }
 
-export async function generateBrandProfile(business: string, tweak?: string): Promise<BrandProfile> {
+export async function generateBrandProfile(
+  business: string,
+  tweak?: string,
+  tier: Tier = defaultTier(),
+): Promise<BrandProfile> {
   const userContent = tweak ? `${business}\n\nAdjust the brand per this note: ${tweak}` : business;
   let parsed: Record<string, unknown> = {};
   try {
     const res = await anthropic.messages.create({
-      model: BRAND_MODEL,
+      model: modelFor("aux", tier),
       max_tokens: 2000,
       system: BRAND_SYSTEM,
       messages: [{ role: "user", content: userContent }],
@@ -164,6 +168,7 @@ export async function generateBrandProfile(business: string, tweak?: string): Pr
     voice,
     accent: typeof parsed.accent === "string" && /^#[0-9a-fA-F]{3,8}$/.test(parsed.accent) ? parsed.accent : "#0f6fec",
     sections: planSections(rawSections, canvasMode),
+    tier,
     createdAt: new Date().toISOString(),
   };
 }

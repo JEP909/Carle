@@ -1,6 +1,7 @@
 import { chromium } from "playwright";
 import { anthropic } from "./anthropic";
 import { getRubric, rubricText } from "./rubric";
+import { type Tier, modelFor, defaultTier } from "./models";
 
 // The VISUAL judge — the capability the system never had. It RENDERS a generated
 // card to an image and shows that image to a vision model alongside the rubric,
@@ -8,7 +9,6 @@ import { getRubric, rubricText } from "./rubric";
 // than by grepping HTML. Returns a verdict + specific visual failures that the
 // revise loop can act on.
 
-const JUDGE_MODEL = "claude-opus-4-8"; // vision-capable; this is the taste call, worth Opus
 
 export type VisualVerdict = {
   pass: boolean;
@@ -57,6 +57,7 @@ Return ONLY JSON:
 export async function judgeVisual(
   html: string,
   rubricId: string,
+  tier: Tier = defaultTier(),
 ): Promise<VisualVerdict> {
   const rubric = getRubric(rubricId);
   const rubricBlock = rubric ? rubricText(rubric) : "(no specific rubric; judge against the general bar)";
@@ -72,7 +73,7 @@ export async function judgeVisual(
 
   try {
     const res = await anthropic.messages.create({
-      model: JUDGE_MODEL,
+      model: modelFor("judge", tier),
       max_tokens: 1000,
       system: JUDGE_SYSTEM,
       messages: [

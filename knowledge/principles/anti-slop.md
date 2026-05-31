@@ -5,13 +5,21 @@ safe, familiar, or like something produced a thousand times before, it is
 probably slop — choose the considered thing instead. This is a floor, not a
 style; it applies in every design language.
 
-## The vibe-coder visual dialect (banned outright)
-These specific moves instantly mark a card as AI-generated. They are forbidden:
-- **The bolt/lightning glyph in a rounded accent-colored square.** This is THE
-  generic "AI / action / generate" icon. Never use a lightning bolt, sparkle ✨,
-  or magic-wand as a primary icon, and never put a lone glyph in a purple/indigo
-  rounded-square tile as a "hub". If you need a focal mark, use a real brand logo
-  ({{logo:...}}) or a specific, meaningful custom icon — never a generic one.
+## ABSOLUTELY FORBIDDEN: the generic AI icon glyphs
+Never, under any circumstances, draw or use any of these as an icon — they are
+the instant tell of AI-generated slop, zero exceptions:
+- a **sparkle / twinkle / 4-point star** (✨, a diamond made of curved points)
+- a **lightning bolt / zap**
+- a **magic wand**, **stars**, or any "AI / magic / generate" glyph
+- a **lone glyph inside a rounded accent-colored (purple/indigo/gradient)
+  square tile**, especially next to the heading as a fake "brand mark" or "hub".
+
+Do NOT put a decorative icon tile beside the card's title at all. A card does not
+need a logo lockup. If — and only if — a REAL brand belongs there, use
+`{{logo:NAME}}`. Otherwise show no icon tile. When an element genuinely needs a
+small icon (a list marker, a metric affordance), draw a specific, literal,
+meaningful shape (an arrow, a checkmark, a real object) — never a generic
+sparkle/bolt/star. If you catch yourself reaching for a sparkle, delete it.
 - **Decorative status pills.** Floating pills like "5 apps connected · syncing",
   "● Live", "Channels connected", "AI-powered" that exist only as decoration are
   noise pretending to be product detail. Only show a status indicator if it

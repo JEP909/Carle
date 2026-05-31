@@ -20,7 +20,19 @@ const BOLT_PATHS = [
   /polygon points="13[ ,]/i,
   /d="M1[13][ .,]\d{1,2}[ .,]\d[ .,]?14[hl]/i,
 ];
-const SPARKLE_HINT = /sparkl|magic|✨|<path[^>]*d="M12 ?0[^"]*l[^"]*z"[^>]*\/>\s*<path[^>]*d="M/i;
+// Sparkle / 4-point-star: the #1 generic AI glyph. It varies infinitely in
+// coordinates, so detect by STRUCTURE and context, not exact paths:
+//  - the literal character or words,
+//  - a tiny path made of 4 cubic curves that returns to its start (a symmetric
+//    twinkle), e.g. "M6.5 1.5C... 6.5 1.5Z" — 3+ C/c segments and a Z close,
+//  - any small icon tile filled with an accent/gradient sitting next to a title.
+const SPARKLE_HINT = /sparkl|twinkl|magic|✨|✦|✧|⭐|\bstar\b/i;
+// A sparkle/twinkle is a small closed path that RETURNS TO ITS START POINT — the
+// coordinate-agnostic signature. Match: M<x> <y> ... <same x> <y>Z, where the
+// path is icon-sized (short) and uses curves. Captures the start coords and
+// requires them to reappear right before the Z.
+const STAR_PATH =
+  /d="M\s*([\d.]+)[ ,]+([\d.]+)[Cc][^"]{4,160}?\1[ ,]+\2\s*[Zz]"/;
 
 // Decorative status pills: "5 apps connected", "channels connected", "● Live",
 // "AI-powered", "synced/syncing" floating chips that are pure decoration.
@@ -42,10 +54,29 @@ export function scanForSlop(html: string): SlopFinding[] {
   const out: SlopFinding[] = [];
   const push = (id: string, detail: string) => out.push({ id, detail });
 
-  if (BOLT_PATHS.some((re) => re.test(html)) || SPARKLE_HINT.test(html)) {
+  if (
+    BOLT_PATHS.some((re) => re.test(html)) ||
+    SPARKLE_HINT.test(html) ||
+    STAR_PATH.test(html)
+  ) {
     push(
-      "bolt-icon",
-      "A lightning-bolt/sparkle/magic glyph is used as an icon. Remove it — use a real brand logo or a specific, meaningful custom icon instead. Never a generic AI/action glyph.",
+      "ai-glyph",
+      "A generic AI glyph (sparkle/4-point star, lightning bolt, or magic wand) is used as an icon — the #1 vibe-coder tell. Remove it entirely. Do not put a decorative icon tile next to the title. Use a real {{logo:...}} only if a real brand belongs there; otherwise no icon.",
+    );
+  }
+  // The offending STRUCTURE: a small inline <svg> sitting inside a rounded tile
+  // filled with an accent/gradient, beside the heading — the fake "brand mark".
+  if (
+    /(?:background:\s*(?:var\(--(?:indigo|accent)\)|#[0-9a-f]{3,6}|linear-gradient[^;]*));[^}]*border-radius:\s*\d/i.test(
+      html,
+    ) &&
+    /<svg[^>]*viewBox="0 0 (?:24|20|16)[^"]*"[^>]*>\s*<path/i.test(html) &&
+    !/\{\{logo:/.test(html) &&
+    !/aria-label=/.test(html)
+  ) {
+    push(
+      "accent-icon-tile",
+      "There's a hand-drawn glyph inside an accent/gradient rounded tile (a fake brand mark next to the title). Remove the tile entirely unless it holds a real {{logo:...}}.",
     );
   }
   if (DECOR_PILL.test(html)) {

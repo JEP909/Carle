@@ -1,0 +1,68 @@
+// Hand-build a richly DIMENSIONAL card diorama at the Chexy/Chatbase bar:
+// floating rendered objects, real depth (layered shadows + perspective),
+// gradient sheen, an underglow. The antidote to flat/safe panels.
+const fs = require("fs");
+
+const html = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Card issuing</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#fff;display:grid;place-items:center;padding:56px 32px;-webkit-font-smoothing:antialiased}
+.card{width:430px}
+/* the dimensional stage — deep indigo field with a soft spotlight */
+.stage{position:relative;height:320px;border-radius:24px;overflow:hidden;
+  background:
+    radial-gradient(80% 70% at 50% 18%, #3b3a8f 0%, #25255f 55%, #1a1a45 100%);
+  box-shadow:0 30px 60px -28px rgba(40,30,120,.6)}
+.stage::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(50% 36% at 50% 20%, rgba(255,255,255,.16), transparent 70%)}
+/* perspective wrapper so the cards tilt in 3D */
+.deck{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);
+  width:230px;height:150px;transform-style:preserve-3d;perspective:900px}
+.ccard{position:absolute;inset:0;border-radius:16px;padding:18px;
+  box-shadow:0 18px 40px -14px rgba(0,0,0,.55);overflow:hidden}
+.ccard .chip{width:34px;height:26px;border-radius:6px;background:linear-gradient(135deg,#f6e7b0,#cda955);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.ccard .brand{position:absolute;right:16px;bottom:14px;color:#fff;font-weight:700;font-style:italic;font-size:18px;letter-spacing:-.02em;opacity:.95}
+.ccard .num{position:absolute;left:18px;bottom:16px;color:rgba(255,255,255,.85);font-size:12px;letter-spacing:.14em}
+/* back card */
+.c1{transform:translateX(-46px) translateY(16px) rotate(-14deg) scale(.92);
+  background:linear-gradient(150deg,#2b2b3c,#15151f);filter:saturate(1.05)}
+/* middle card — metallic */
+.c2{transform:translateX(20px) translateY(6px) rotate(-4deg) scale(.97);
+  background:linear-gradient(150deg,#e9ebf0,#b9bdc9 60%,#9aa0b0)}
+.c2 .num,.c2 .brand{color:#2b2e3a}
+/* front holographic card with a moving sheen + underglow */
+.c3{transform:translateX(64px) translateY(-6px) rotate(7deg);
+  background:linear-gradient(140deg,#ff8fb0,#a26bf6 45%,#5b6cff 75%,#33c5b0)}
+.c3::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(125deg,transparent 38%,rgba(255,255,255,.55) 48%,transparent 58%);mix-blend-mode:screen}
+.c3-glow{position:absolute;left:50%;bottom:46px;transform:translateX(-10%);width:200px;height:40px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(162,107,246,.85),transparent);filter:blur(14px);z-index:0}
+.badge{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:2;display:flex;align-items:center;gap:8px;
+  background:rgba(10,10,25,.55);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.16);
+  color:#fff;font-size:12.5px;font-weight:500;padding:7px 14px;border-radius:999px}
+.badge .d{width:7px;height:7px;border-radius:50%;background:#33c5b0;box-shadow:0 0 8px 1px #33c5b0}
+.copy{padding:26px 4px 0}
+.copy h2{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.14;color:#0a0a0a}
+.copy p{font-size:15.5px;line-height:1.5;color:#5b6472;margin-top:12px;max-width:34ch}
+</style></head><body>
+<article class="card">
+  <div class="stage">
+    <div class="c3-glow"></div>
+    <div class="deck">
+      <div class="ccard c1"><div class="chip"></div><span class="num">•••• 2049</span><span class="brand">VISA</span></div>
+      <div class="ccard c2"><div class="chip"></div><span class="num">•••• 7731</span><span class="brand">AMEX</span></div>
+      <div class="ccard c3"><div class="chip"></div><span class="num">•••• 0042</span><span class="brand">VISA</span></div>
+    </div>
+    <div class="badge"><span class="d"></span>3 card types live</div>
+  </div>
+  <div class="copy">
+    <h2>Launch your own card programme in days</h2>
+    <p>Issue virtual and physical cards — set limits, brand the metal, and ship spend controls without a banking license.</p>
+  </div>
+</article>
+</body></html>`;
+
+fs.writeFileSync("reference/feature-cards3d.html", html);
+console.log("wrote reference/feature-cards3d.html");

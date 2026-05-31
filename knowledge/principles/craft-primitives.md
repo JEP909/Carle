@@ -5,6 +5,19 @@ Chexy, Chatbase, Vercel, Linear) read as studio-grade rather than AI-generated.
 These apply across every component — compose them; tune to the brief. They are
 techniques to reason with, not snippets to paste.
 
+## The three finish details that separate good from great (always)
+1. ICONS: any brand/tool/platform glyph MUST be a REAL logo via `{{logo:NAME}}` —
+   never hand-drawn letter-marks or generic shapes. No real logo available? Use a
+   precise, literal custom icon (arrow, check, calendar) or leave it out. Never a
+   sparkle/bolt as a hero glyph.
+2. SPACING: hold an 8px rhythm. Consistent padding inside elements, even gaps
+   between siblings, aligned to a shared grid. No cramped clusters, no uneven
+   gaps, no dead empty zones. Let the focal element breathe a little more than
+   the chrome.
+3. TYPE: Geist throughout, clean hierarchy — heading weight 600 tight tracking,
+   body 400 muted, one medium for emphasis; tabular figures for numbers. Don't
+   mix weights/sizes arbitrarily.
+
 ## Floating panel
 The atom of premium product dioramas: a rounded rectangle that appears to hover
 above the surface.

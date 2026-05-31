@@ -12,10 +12,14 @@ hand-draw or guess a brand's SVG path — emit the token.
 - Recolor for monochrome contexts: `{{logo:NAME:24:currentColor}}` or
   `{{logo:NAME:24:#ffffff}}` (e.g. a white logo on a dark pill). Omit to use the
   real brand color.
-- Available names: whatsapp, messenger, gmail, discord, telegram, slack, notion,
-  github, google, youtube, tiktok, instagram, x, stripe, visa, mastercard, amex.
-  Use the exact lowercase name. If a brand you need isn't listed, draw a tasteful
-  generic glyph instead — do NOT invent a fake brand path.
+- **Coverage is the full simple-icons set (3,400+ real brands)** — reference any
+  brand by its slug: the brand name lowercased with spaces/punctuation removed
+  (e.g. `americanexpress`, `aircanada`, `mastercard`, `visa`, `stripe`, `paypal`,
+  `shopify`, `notion`, `slack`, `github`, `google`, `googlepay`, `applepay`,
+  `youtube`, `tiktok`, `x`, `spotify`, `airbnb`, `uber`). Common nicknames also
+  work: `amex`→American Express, `aeroplan`→Air Canada. Never hand-draw or
+  guess a brand mark or wordmark — emit the token; if a token renders unresolved,
+  pick the correct slug rather than drawing it.
 
 Put logos in rounded tiles, integration grids, payment-method rows, orbit
 diagrams, "channels connected" scenes — wherever a real product would show them.

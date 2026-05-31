@@ -267,6 +267,23 @@ function replaceLogoTokens(s: string): string {
   });
 }
 
+// Finalize a STATIC (non-streamed) HTML document the way the stream does, minus
+// images: inject the embedded font once (if absent) and resolve {{logo:...}}
+// tokens to real inline SVGs. Used by /api/compose so hand-/server-authored
+// harness HTML becomes a self-contained card. Image tokens are left for the
+// image compositor to handle separately.
+export function finalizeStaticHtml(html: string): string {
+  let out = html;
+  if (FONT_BLOCK && !/id="carle-font"/.test(out)) {
+    const m = out.match(/<head[^>]*>/i);
+    if (m) {
+      const at = m.index! + m[0].length;
+      out = out.slice(0, at) + "\n" + FONT_BLOCK + out.slice(at);
+    }
+  }
+  return replaceLogoTokens(out);
+}
+
 // Turn an Anthropic text stream into a web ReadableStream of UTF-8 chunks the
 // browser can read incrementally — this is what makes generation feel instant.
 // As it streams, it (1) drops any stray characters before the first tag and

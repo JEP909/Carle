@@ -266,7 +266,9 @@ const LOGO_TOKEN = /\{\{logo:([a-z0-9]+)(?::(\d+))?(?::(#[0-9a-fA-F]{3,8}|curren
 function replaceLogoTokens(s: string): string {
   return s.replace(LOGO_TOKEN, (full, name, size, color) => {
     const svg = logoSvg(name, size ? Number(size) : 28, color || undefined);
-    return svg ?? full; // unknown logo: leave the token (visible, so we notice)
+    // Unknown brand: drop the token (a stray brand we don't have a vector for is
+    // better hidden than shown as raw `{{logo:...}}` text to the user).
+    return svg ?? "";
   });
 }
 

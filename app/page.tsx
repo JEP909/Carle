@@ -100,27 +100,29 @@ export default function Carle() {
         setHtml(html);
         if (error) setError(error);
       });
-      // Visual gate: render the draft, let the vision judge score it against the
-      // rubric. If it's below the bar, the response streams a revision that fixes
-      // the specific VISUAL failures it saw. If it already passes, JSON comes
-      // back and we keep the draft.
-      setPhase("checking");
-      try {
-        const ref = await fetch("/api/judge", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ html: draft, prompt }),
-        });
-        const ctype = ref.headers.get("content-type") || "";
-        if (!ctype.includes("application/json") && ref.body) {
-          setHtml("");
-          await streamInto(ref, (full) => {
-            const { html } = clean(full);
-            setHtml(html);
+      // Finalize: composite any rendered objects (image placeholders -> real
+      // renders, already prefetched during the build). Fast — no vision judge and
+      // no auto-revision, which together used to double every generation's time.
+      // Templated cards arrive already final, so this only runs for free-build
+      // drafts that contain image placeholders.
+      if (draft.includes("data-carle-img")) {
+        setPhase("checking");
+        try {
+          const ref = await fetch("/api/compose", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ html: draft }),
           });
+          if (ref.ok && ref.body) {
+            setHtml("");
+            await streamInto(ref, (full) => {
+              const { html } = clean(full);
+              setHtml(html);
+            });
+          }
+        } catch {
+          // best-effort; keep the draft on any failure
         }
-      } catch {
-        // gate is best-effort; keep the draft on any failure
       }
       setPhase("ready");
     } catch (e) {

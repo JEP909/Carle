@@ -5,6 +5,25 @@ when it has a reason. Animate to explain a change, guide attention, or reward an
 action. Never animate for decoration. A single well-judged micro-interaction
 beats ten ambient ones.
 
+## ALWAYS include tasteful motion — but make it SCREENSHOT-SAFE (read first)
+Every component you build should include a little motion: a calm on-load entrance
+plus hover/press feedback. BUT the component is judged and previewed as a STATIC
+render, so motion must never hide content:
+- **On-LOAD entrance only — never scroll-gated.** Use a CSS `@keyframes` entrance
+  (fade + small `translateY`, ~320–420ms ease-out, stagger siblings with
+  `animation-delay`) that PLAYS AND SETTLES ON LOAD. Do NOT leave elements at
+  `opacity:0` waiting for scroll/IntersectionObserver — below-the-fold content
+  would render blank in a screenshot. The final, settled state must be fully
+  visible with no JS required.
+- **Prefer pure CSS** (keyframes + transitions). It runs even in a sandboxed
+  iframe. Keep any JS optional and non-essential (the static state must look right
+  without it).
+- **Hover lift + press** on cards and buttons (transform + shadow, ~160ms).
+- Animate only `transform`/`opacity`. Honour `prefers-reduced-motion: reduce`
+  (disable the transforms there).
+- Optional flourish on the ONE hero: a slow, looping, subtle shimmer/float that is
+  always at a visible state (never starts invisible).
+
 ## Principles
 - **Fast and eased.** 120–260ms for micro-interactions; up to ~400ms for larger
   entrances. Use eased curves (`cubic-bezier`), never linear. Ease-out for things
@@ -28,9 +47,11 @@ library to paste from. Compose them; tune the timing to the brief.
 - **Cursor-tracked sheen** — a soft radial highlight follows the pointer across a
   card/focal object, fed via CSS custom properties from a tiny pointermove
   handler. The premium "the surface catches light" move. Subtle opacity.
-- **Reveal on load/scroll** — elements fade up (`opacity` 0→1, `translateY`
-  ~12–20px→0) as they enter. Stagger siblings by ~60–90ms for a composed cascade.
-  Use IntersectionObserver for scroll; honour reduced-motion.
+- **Reveal on load** — elements fade up (`opacity` 0→1, `translateY` ~12–20px→0)
+  via a CSS `@keyframes` that runs immediately on load and SETTLES (forwards fill).
+  Stagger siblings with `animation-delay` (~60–90ms) for a composed cascade. Do
+  NOT gate this on scroll/IntersectionObserver — the settled state must be visible
+  without scrolling.
 - **Stagger** — a group reveals in sequence rather than all at once, drawing the
   eye through the content in reading order.
 - **Magnetic / proximity** — a button or element eases slightly toward the cursor

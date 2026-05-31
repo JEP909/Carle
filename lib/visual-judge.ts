@@ -26,7 +26,7 @@ export async function renderToPng(html: string): Promise<string> {
       deviceScaleFactor: 2,
     });
     await page.setContent(html, { waitUntil: "networkidle" });
-    await page.waitForTimeout(350);
+    await page.waitForTimeout(800); // let on-load entrance motion settle before capture
     const buf = await page.screenshot({ type: "png" });
     return buf.toString("base64");
   } finally {

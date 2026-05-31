@@ -5,6 +5,19 @@ safe, familiar, or like something produced a thousand times before, it is
 probably slop — choose the considered thing instead. This is a floor, not a
 style; it applies in every design language.
 
+## DEPTH IS MANDATORY — flat is the #1 "vibe-coded" tell
+A section that is a flat row of bordered boxes on a plain background is the single
+biggest reason output looks AI-generated. Every section MUST have real, layered
+depth — at least one of:
+- a panel that FLOATS above the surface with a layered shadow (e.g.
+  \`0 1px 2px rgba(16,24,40,.05), 0 24px 48px -18px rgba(16,24,40,.18)\`), ideally
+  tilted slightly or overlapping a sibling to imply 3D;
+- a real product-UI diorama (inbox, dashboard, chart, chat) built from layered
+  sub-panels, not a single card;
+- a rendered hero object (\`{{image:}}\`) casting a soft shadow.
+Hairline borders and a single drop shadow alone are NOT depth. If a section is one
+flat plane, rework it until something lifts off the page.
+
 ## ABSOLUTELY FORBIDDEN: a physical product drawn in CSS
 A credit/payment/bank card, a phone or device, a wearable, a 3D shield/orb, or any
 solid physical product, **built out of `<div>`s and gradients, is the #1 flat-fake

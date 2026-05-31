@@ -38,33 +38,48 @@ export type BrandProfile = {
 
 const BRAND_MODEL = "claude-sonnet-4-6"; // a design call, not generation — fast + cheap
 
-const BRAND_SYSTEM = `You are a senior brand & product designer. Given a short
-description of a business/app, define a COMMITTED visual brand identity and a set
-of website sections to showcase it. You do NOT write HTML — you return JSON.
+const BRAND_SYSTEM = `You are a senior brand & product designer at the level of
+the teams behind Stripe, Linear, Chatbase, and Chexy. Given a short description of
+a business/app, define a COMMITTED, RESTRAINED visual brand and a set of website
+sections. You do NOT write HTML — you return JSON.
+
+THE BAR — and the #1 thing to AVOID:
+Real premium product sites are LIGHT, clean, and restrained: a near-white canvas,
+near-black/slate ink, hairline borders, ONE confident accent, generous space, and
+real product UI. The single most common failure — the thing that screams
+"AI-generated startup template" — is a DARK page covered in PURPLE/VIOLET gradients
+and glows. DO NOT produce that. No purple-on-black. No gradient-mesh backgrounds.
+No glow washes as the primary look. If you reach for "dark + purple + glow", stop.
 
 Decide:
-1. name: infer a plausible product/brand name from the description.
-2. expanded: 2-4 tight sentences describing the product concretely (what it does,
-   who it's for, the tone) — a brief a designer would work from.
-3. canvasMode: commit to EXACTLY ONE of three (this is the most important choice;
-   every section will obey it):
-   - "light-monochrome": white/near-white canvas, zinc/slate ink, hairline borders,
-     almost no background gradient; color comes from ONE accent + hero objects.
-     (Stripe-light / Chatbase.) The safe, premium default for most B2B/SaaS.
-   - "dark-glass": deep charcoal canvas, glass panels, one cyan/violet glow.
-     (Linear.) For dev-tools / technical / "AI-era" products.
-   - "saturated-field": one committed saturated color owns the canvas, with
-     floating white panels on it. (Chexy.) For bold consumer/fintech brands.
-4. palette: {field, accents, ink, mood} — a committed color identity that fits the
-   domain (fintech=indigo/violet; health=teal; creator=coral; dev-tools=ink+electric;
-   AI=spectral indigo→violet). FIELD is a real saturated backdrop value, not white.
-5. accent: a single canonical accent HEX (e.g. "#635bff") used for buttons/links/key numbers.
-6. typography: 1-2 lines on the type system (weights, scale, feel). House font is Geist.
-7. voice: 3-5 brand voice traits (e.g. ["precise","confident","technical"]).
-8. sections: 3-5 website sections to showcase the brand. Each {label, brief}, where
-   brief is a concrete, brand-aware description of that section a designer would build
-   from. Favor variety (e.g. a hero/feature section, a stats/metrics section, a pricing
-   or rewards section, an integrations/logos section). Make briefs specific.
+1. name: infer a plausible product/brand name.
+2. expanded: 2-4 tight sentences describing the product concretely.
+3. canvasMode: choose like a real brand would for this DOMAIN:
+   - "light-monochrome" — white/near-white canvas, slate/zinc ink, hairline borders,
+     basically no background gradient; color comes from ONE accent + real content.
+     This is the DEFAULT and correct choice for the large majority of products
+     (SaaS, fintech, commerce, support, health, marketing). Stripe / Chatbase / Chexy
+     are all fundamentally this.
+   - "dark-glass" — ONLY for genuinely developer/infrastructure/security products
+     where dark is native (think Linear, Vercel). And even then it is RESTRAINED:
+     near-black canvas, ONE accent used sparingly, subtle 1px borders, NO purple
+     wash, NO glow gradients. If unsure, do NOT pick this.
+   - "saturated-field" — for a bold consumer/fintech brand: a LIGHT page where ONE
+     section/panel commits to a single saturated brand color (like Chexy's indigo
+     panel). NOT a fully dark or gradient page.
+   When in doubt, choose light-monochrome.
+4. palette: {field, accents, ink, mood}. For light-monochrome, FIELD is white/near-white
+   (e.g. "#ffffff" or "#fafafa"), ink is slate/zinc, and there is exactly ONE accent.
+   Pick a real, brand-appropriate accent for the domain — and AVOID defaulting to
+   purple/violet unless the brand is genuinely purple. Good accents: a confident blue,
+   indigo, teal/emerald, warm coral, amber, or near-black. Tasteful and specific,
+   never rainbow, never neon-on-dark.
+5. accent: a single canonical accent HEX used sparingly for buttons/links/key numbers.
+6. typography: 1-2 lines (weights, scale, feel). House font is Geist.
+7. voice: 3-5 brand voice traits.
+8. sections: 3-5 sections to showcase the brand. Each {label, brief}, brief = a
+   concrete, brand-aware description a designer would build from. Favor variety
+   (hero, feature cards, metrics/stats, pricing, integrations/logos). Be specific.
 
 Respond ONLY as JSON:
 {"name","expanded","canvasMode","palette":{"field","accents","ink","mood"},"accent","typography","voice":[],"sections":[{"label","brief"}]}`;
@@ -148,9 +163,9 @@ export async function generateBrandProfile(business: string, tweak?: string): Pr
 }
 
 const MODE_RULES: Record<CanvasMode, string> = {
-  "light-monochrome": "white/near-white canvas (#ffffff–#fafafa), zinc/slate ink (#09090b headings, #52525b body, #a1a1aa meta), hairline borders (#e4e4e7), almost no background gradient. Color enters through ONE accent and the hero objects.",
-  "dark-glass": "deep charcoal/near-black canvas (#08090c–#101114), raised glass panels (#16171b) with a faint top highlight and hairline; ink #f4f4f5 / #a1a1aa; one cyan/violet glow behind the hero; mix-blend-mode:screen glints; ghost secondary buttons.",
-  "saturated-field": "one committed saturated color field owns the canvas, with floating WHITE sub-panels on it (layered shadow so they lift); tinted controls; the white panels carry the detail.",
+  "light-monochrome": "white/near-white canvas (#ffffff–#fafafa), zinc/slate ink (#09090b headings, #52525b body, #a1a1aa meta), hairline borders (#e4e4e7), almost NO background gradient. Color enters through ONE accent and real product UI. This is the Stripe/Chatbase/Chexy look — clean and restrained.",
+  "dark-glass": "RESTRAINED dark (Linear/Vercel), not a glowy AI template. Near-black canvas (#0a0b0d–#101114), subtle 1px borders (rgba(255,255,255,.08)), ink #f4f4f5 / #a1a1aa, ONE accent used sparingly on a button or key number. ABSOLUTELY NO purple/violet wash, NO glow gradients, NO color mesh — the surface stays calm and dark, color is a single deliberate touch.",
+  "saturated-field": "a LIGHT page where ONE section/panel commits to a single saturated brand color (like Chexy's indigo panel) with floating WHITE sub-panels on it; the rest of the page stays white/clean. NOT a fully dark or gradient page.",
 };
 
 // The brand block injected into the build system on EVERY generation so all
